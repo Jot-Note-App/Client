@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import './App.css'
 import './index.css'
-import GoogleLogout from './components/googleLogout';
 import SplashScreenBackground from './components/splashScreenBackground';
 import PenIcon from './icons/pen';
 
@@ -16,7 +15,7 @@ function App() {
         <div className="ml-48 grid place-content-center justify-items-center">
           <div className="flex items-end mb-8 gap-1">
             <div className="text-center text-8xl font-bold">Jot</div>
-            <PenIcon />
+            {/* <PenIcon /> */}
           </div>
           <p className="text-slate-500 text-xl mb-4">
             Notes with a pulse: Your sentiments, brilliantly organized
