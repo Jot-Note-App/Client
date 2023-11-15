@@ -14,7 +14,7 @@ function App() {
       <div className="flex min-h-screen">
         <div className="ml-48 grid place-content-center gap-4">
           <div className="text-center text-8xl font-bold">Jot</div>
-          <p className="text-slate-600">
+          <p className="text-slate-600 text-xl">
             Notes with a pulse: Your sentiments, brilliantly organized
           </p>
           <div className='grid justify-items-center'>
