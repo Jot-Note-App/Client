@@ -1,34 +1,38 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useEffect, useState } from 'react'
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import './App.css'
+import './index.css'
+import GoogleLogout from './components/googleLogout';
+import SplashScreenBackground from './components/splashScreenBackground';
 
 function App() {
-  const [count, setCount] = useState(0)
-
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const clientId = import.meta.env.VITE_CLIENT_ID;
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <GoogleOAuthProvider clientId={clientId}>
+      <SplashScreenBackground />
+      <div className="flex min-h-screen">
+        <div className="ml-48 grid place-content-center gap-4">
+          <div className="text-center text-8xl font-bold">Jot</div>
+          <p className="text-slate-600">
+            Notes with a pulse: Your sentiments, brilliantly organized
+          </p>
+          <div className='grid justify-items-center'>
+            <GoogleLogin
+              onSuccess={credentialResponse => {
+                console.log(credentialResponse);
+                setIsLoggedIn(true);
+              }}
+              onError={() => {
+                console.log('Login Failed');
+              }}
+            />
+
+          </div>
+
+        </div>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    </GoogleOAuthProvider >
   )
 }
 
