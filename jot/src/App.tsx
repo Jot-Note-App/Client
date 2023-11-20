@@ -1,12 +1,25 @@
 import { useEffect, useState } from 'react'
-import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import { GoogleOAuthProvider, GoogleLogin, } from '@react-oauth/google';
 import './App.css'
 import './index.css'
 import SplashScreenBackground from './components/splashScreenBackground';
 import PenIcon from './icons/pen';
+import GoogleLoginCustom from './components/googleLoginCustom';
+import { useJwt, decodeToken, isExpired } from "react-jwt";
+import { validateCredentials } from './utils/authentication';
+
+
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [credential, setCredential] = useState('');
+  // useEffect(() => {
+  //   console.log("useeffect")
+  //   if (credential) {
+  //     var decodedToken = useJwt(credential);
+  //     console.log(decodedToken)
+  //   }
+  // }, [credential]); // Empty dependency array to run the effect once
   const clientId = import.meta.env.VITE_CLIENT_ID;
   return (
     <GoogleOAuthProvider clientId={clientId}>
@@ -23,11 +36,13 @@ function App() {
           <GoogleLogin
             onSuccess={credentialResponse => {
               console.log(credentialResponse);
+              console.log(validateCredentials(credentialResponse.credential ?? ''));
               setIsLoggedIn(true);
             }}
             onError={() => {
               console.log('Login Failed');
             }}
+            ux_mode='popup'
           />
         </div>
       </div>
