@@ -1,4 +1,151 @@
-# Replace this with your own GraphQL schema file!
-type Query {
-  field: String
+schema {
+  query: Query
+  mutation: Mutation
 }
+type CreateUserSuccess {
+  user: User!
+}
+type DeleteMutationSuccess {
+  success: Boolean!
+}
+type DeleteUserSuccess {
+  success: Boolean!
+}
+type Entry {
+  id: ID!
+  journal: Journal!
+  content: String
+  user: User!
+}
+type EntryConnection {
+  edges: [EntryEdge!]!
+  pageInfo: PageInfo!
+}
+type EntryEdge {
+  cursor: String!
+  node: Entry!
+}
+type EntryMutationSuccess {
+  entry: Entry!
+}
+type Journal {
+  id: ID!
+  user: User!
+  name: String!
+  ordinal: Int!
+  entries(first: Int = 20, after: ID): EntryConnection
+  templates(first: Int = 20, after: ID): JournalTemplateConnection
+}
+type JournalConnection {
+  edges: [JournalEdge!]!
+  pageInfo: PageInfo!
+}
+type JournalEdge {
+  cursor: String!
+  node: Journal!
+}
+type JournalMutationSuccess {
+  journal: Journal!
+}
+type JournalTemplate {
+  id: ID!
+  journal: Journal!
+  content: String
+}
+type JournalTemplateConnection {
+  edges: [JournalTemplateEdge!]!
+  pageInfo: PageInfo!
+}
+type JournalTemplateEdge {
+  cursor: String!
+  node: JournalTemplate!
+}
+type LoginFailure {
+  error: String!
+}
+type LoginSuccess {
+  success: Boolean!
+}
+type LogoutFailure {
+  error: String!
+}
+type LogoutSuccess {
+  success: Boolean!
+}
+type Mutation {
+  createUser(input: CreateUserInput!): CreateUserResponse!
+  updateUser(id: ID!, input: UpdateUserInput!): UpdateUserResponse!
+  deleteUser(id: ID!): DeleteUserResponse!
+  createJournal(input: CreateJournalInput!): JournalMutationResponse!
+  updateJournal(id: ID!, input: UpdateJournalInput!): JournalMutationResponse!
+  deleteJournal(id: ID!): DeleteMutationResponse!
+  createEntry(input: CreateEntryInput!): EntryMutationResponse!
+  updateEntry(id: ID!, input: UpdateEntryInput!): EntryMutationResponse!
+  deleteEntry(id: ID!): DeleteMutationResponse!
+  loginOrSignUpWithGoogle(credentials: String!): LoginResponse!
+  logout: LogoutResponse!
+}
+type MutationFailure {
+  error: String!
+}
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+type Query {
+  user: User!
+}
+type UpdateUserSuccess {
+  user: User!
+}
+type User {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  email: String!
+  journals(first: Int = 20, after: ID): JournalConnection
+  templates(first: Int = 20, after: ID): JournalTemplateConnection
+}
+union CreateUserResponse = CreateUserSuccess | MutationFailure
+union DeleteMutationResponse = DeleteMutationSuccess | MutationFailure
+union DeleteUserResponse = DeleteUserSuccess | MutationFailure
+union EntryMutationResponse = EntryMutationSuccess | MutationFailure
+union JournalMutationResponse = JournalMutationSuccess | MutationFailure
+union LoginResponse = LoginSuccess | LoginFailure
+union LogoutResponse = LogoutSuccess | LogoutFailure
+union UpdateJournalResponse = JournalMutationSuccess | MutationFailure
+union UpdateUserResponse = UpdateUserSuccess | MutationFailure
+input CreateEntryInput {
+  journalId: ID!
+  content: String!
+  userId: ID!
+}
+input CreateJournalInput {
+  userId: ID!
+  name: String!
+}
+input CreateUserInput {
+  firstName: String!
+  lastName: String!
+  email: String!
+}
+input UpdateEntryInput {
+  journalId: ID
+  content: String
+}
+input UpdateJournalInput {
+  name: String
+  ordinal: Int
+}
+input UpdateUserInput {
+  firstName: String
+  lastName: String
+  email: String
+}
+"The @defer directive may be specified on a fragment spread to imply de-prioritization, that causes the fragment to be omitted in the initial response, and delivered as a subsequent response afterward. A query with @defer directive will cause the request to potentially return multiple responses, where non-deferred data is delivered in the initial response and data deferred delivered in a subsequent response. @include and @skip take precedence over @defer."
+directive @defer(if: Boolean = true, label: String) on FRAGMENT_SPREAD | INLINE_FRAGMENT
+"The @specifiedBy built-in directive is used within the type system definition language to provide a scalar specification URL for specifying the behavior of custom scalar types."
+directive @specifiedBy(url: String!) on SCALAR
+

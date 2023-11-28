@@ -1,3 +1,6 @@
+# Load env variables into makefile
+include .env
+
 # Default target: build the project
 all: run
 
@@ -5,4 +8,8 @@ all: run
 run:
 	pnpm run start
 
-.PHONY: all run
+# Sync the frontend schema with the backend schema
+update-schema:
+	pnpm rover graph introspect $(DEV_ENDPOINT) > $(SCHEMA_PATH)
+
+.PHONY: all run update-schema validate-schema
