@@ -6,7 +6,7 @@ import { graphql, PayloadError } from 'relay-runtime';
 import { useMutation } from 'react-relay';
 import { SplashScreenLoginMutation$data } from '../__generated__/SplashScreenLoginMutation.graphql';
 
-const SplashScreenLoginMutation = graphql`
+const splashScreenLoginMutation = graphql`
 mutation SplashScreenLoginMutation($credentials: String!) {
   loginOrSignUpWithGoogle(credentials: $credentials) {
     ... on LoginSuccess {
@@ -20,11 +20,11 @@ mutation SplashScreenLoginMutation($credentials: String!) {
 `
 
 interface SplashScreenProps {
-    onLoginCallback?: () => void;
-}
+    onLoginCallback?: () => void
+};
 
 const SplashScreen: React.FC<SplashScreenProps> = ({ onLoginCallback }) => {
-    const [login, _isLoggingIn] = useMutation(SplashScreenLoginMutation);
+    const [login, _isLoggingIn] = useMutation(splashScreenLoginMutation);
     const clientId = import.meta.env.VITE_CLIENT_ID;
     const onLoginComplete = (response: {}, _errors: PayloadError[] | null) => {
         const res = response as SplashScreenLoginMutation$data;

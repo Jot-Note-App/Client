@@ -1,6 +1,7 @@
 import React from 'react';
 import GoogleLogout from '../components/googleLogout'
 
+
 interface MainScreenProps {
     onLogoutCallback?: () => void;
 }

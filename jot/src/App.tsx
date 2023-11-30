@@ -1,18 +1,24 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import './App.css'
 import './index.css'
-import { isAuthenticated } from './utils/authentication';
 import MainScreen from './screens/MainScreen';
 import SplashScreen from './screens/SplashScreen';
-function App() {
+import { graphql } from 'relay-runtime';
+import { useLazyLoadQuery } from "react-relay";
+import { AppIsLoggedInQuery } from './__generated__/AppIsLoggedInQuery.graphql'
+const IsLoggedInQuery = graphql`
+  query AppIsLoggedInQuery {
+    isLoggedIn
+  }
+`;
 
+function App() {
+  const data = useLazyLoadQuery<AppIsLoggedInQuery>(
+    IsLoggedInQuery,
+    {},
+  );
   //TODO: Check if user is already logged in by validating auth cookie and set state accordingly
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  useEffect(() => {
-    const authenticated = isAuthenticated(document);
-    console.log("IS AUTHENTICATED: ", authenticated)
-    setIsLoggedIn(authenticated);
-  }, []); // Run the effect only once when the component mounts
+  const [isLoggedIn, setIsLoggedIn] = useState(data.isLoggedIn);
 
   const onSuccessfulLogin = () => {
     setIsLoggedIn(true)

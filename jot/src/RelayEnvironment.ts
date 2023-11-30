@@ -10,6 +10,7 @@ const HTTP_ENDPOINT = "http://localhost:8080/query";
 
 const fetchFn: FetchFunction = async (request, variables) => {
   const resp = await fetch(HTTP_ENDPOINT, {
+    credentials: 'include',
     method: "POST",
     headers: {
       Accept:

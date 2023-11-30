@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@apollo/rover": "^0.21.0",
+    "@babel/preset-typescript": "^7.23.3",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
     "@types/react-relay": "16.0.4",
@@ -33,6 +34,7 @@
     "eslint": "^8.45.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.3",
+    "graphql": "^16.8.1",
     "postcss": "^8.4.31",
     "relay-compiler": "16.0.0",
     "tailwindcss": "^3.3.5",

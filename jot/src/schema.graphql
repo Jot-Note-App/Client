@@ -96,6 +96,7 @@ type PageInfo {
 }
 type Query {
   user: User!
+  isLoggedIn: Boolean!
 }
 type UpdateUserSuccess {
   user: User!
