@@ -1,5 +1,4 @@
 import React from 'react';
-import splashGraphic from '../assets/splashScreen.svg';
 
 const SplashScreenBackground: React.FC = () => {
     return (

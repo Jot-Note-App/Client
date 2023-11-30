@@ -2,12 +2,37 @@ import React from 'react';
 import { GoogleOAuthProvider, GoogleLogin, } from '@react-oauth/google';
 import SplashScreenBackground from '../components/splashScreenBackground';
 import { validateCredentials } from '../utils/authentication';
+import { graphql, PayloadError } from 'relay-runtime';
+import { useMutation } from 'react-relay';
+import { SplashScreenLoginMutation$data } from '../__generated__/SplashScreenLoginMutation.graphql';
+
+const splashScreenLoginMutation = graphql`
+mutation SplashScreenLoginMutation($credentials: String!) {
+  loginOrSignUpWithGoogle(credentials: $credentials) {
+    ... on LoginSuccess {
+        success
+    }
+    ... on LoginFailure {
+        error
+    }
+  }
+}
+`
 
 interface SplashScreenProps {
-    onLoginCallback?: () => void;
-}
+    onLoginCallback?: () => void
+};
+
 const SplashScreen: React.FC<SplashScreenProps> = ({ onLoginCallback }) => {
+    const [login, _isLoggingIn] = useMutation(splashScreenLoginMutation);
     const clientId = import.meta.env.VITE_CLIENT_ID;
+    const onLoginComplete = (response: {}, _errors: PayloadError[] | null) => {
+        const res = response as SplashScreenLoginMutation$data;
+        console.log("LOGIN RESPONSE: ", res)
+        if (res.loginOrSignUpWithGoogle.success && onLoginCallback != undefined) {
+            onLoginCallback()
+        }
+    };
     return (
         <GoogleOAuthProvider clientId={clientId}>
             <SplashScreenBackground />
@@ -22,11 +47,13 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onLoginCallback }) => {
                     <GoogleLogin
                         onSuccess={credentialResponse => {
                             if (validateCredentials(credentialResponse.credential ?? '')) {
-                                // TODO: Call mutation to log user in
-                            }
-                            //TODO: Move this logic into success callback of log in mutation
-                            if (onLoginCallback != undefined) {
-                                onLoginCallback()
+                                console.log("LOGGING IN WITH CREDENTIAL: ", credentialResponse.credential)
+                                login({
+                                    variables: {
+                                        credentials: credentialResponse.credential
+                                    },
+                                    onCompleted: onLoginComplete,
+                                })
                             }
                         }}
                         onError={() => {

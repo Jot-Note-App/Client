@@ -1,8 +1,6 @@
 import React from 'react';
-import { GoogleOAuthProvider, GoogleLogin, } from '@react-oauth/google';
-import SplashScreenBackground from '../components/splashScreenBackground';
-import { validateCredentials } from '../utils/authentication';
 import GoogleLogout from '../components/googleLogout'
+
 
 interface MainScreenProps {
     onLogoutCallback?: () => void;
