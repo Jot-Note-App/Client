@@ -25,10 +25,3 @@ export const validateCredentials = (credentials: string): boolean => {
     var expired = isExpired(credentials);
     return !expired && validIssuers.has(decodedToken.iss) && decodedToken.aud == import.meta.env.VITE_CLIENT_ID;
 };
-
-export const isAuthenticated = (document: Document): boolean => {
-    //TODO: get cookie name from env variable
-    const cookieName = "jot-auth-cookie";
-    const authCookieExists = document.cookie.split(';').some((cookie) => cookie.trim().startsWith(cookieName));
-    return authCookieExists
-}
