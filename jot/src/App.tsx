@@ -6,6 +6,7 @@ import SplashScreen from './screens/SplashScreen';
 import { graphql } from 'relay-runtime';
 import { useLazyLoadQuery } from "react-relay";
 import { AppIsLoggedInQuery } from './__generated__/AppIsLoggedInQuery.graphql'
+
 const IsLoggedInQuery = graphql`
   query AppIsLoggedInQuery {
     isLoggedIn

@@ -1,6 +1,6 @@
 import React from 'react';
 import { GoogleOAuthProvider, GoogleLogin, } from '@react-oauth/google';
-import SplashScreenBackground from '../components/splashScreenBackground';
+import SplashScreenBackground from '../components/SplashScreenBackground';
 import { validateCredentials } from '../utils/authentication';
 import { graphql, PayloadError } from 'relay-runtime';
 import { useMutation } from 'react-relay';
@@ -28,7 +28,6 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onLoginCallback }) => {
     const clientId = import.meta.env.VITE_CLIENT_ID;
     const onLoginComplete = (response: {}, _errors: PayloadError[] | null) => {
         const res = response as SplashScreenLoginMutation$data;
-        console.log("LOGIN RESPONSE: ", res)
         if (res.loginOrSignUpWithGoogle.success && onLoginCallback != undefined) {
             onLoginCallback()
         }
@@ -47,7 +46,6 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onLoginCallback }) => {
                     <GoogleLogin
                         onSuccess={credentialResponse => {
                             if (validateCredentials(credentialResponse.credential ?? '')) {
-                                console.log("LOGGING IN WITH CREDENTIAL: ", credentialResponse.credential)
                                 login({
                                     variables: {
                                         credentials: credentialResponse.credential
