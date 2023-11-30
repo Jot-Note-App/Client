@@ -23,16 +23,13 @@ const GoogleLogout: React.FC<GoogleLogoutProps> = ({ onLogoutCallback }) => {
     const [logout, _isLoggingOut] = useMutation(googleLogoutLogoutMutation);
     const onLogoutComplete = (response: {}, _errors: PayloadError[] | null) => {
         const res = response as GoogleLogoutLogoutMutation$data;
-        console.log("LOGOUT RESPONSE: ", res)
         if (res.logout.success && onLogoutCallback != undefined) {
             onLogoutCallback()
         }
     };
     return (
         <div onClick={() => {
-            console.log("LOGGING OUT OF GOOGLE");
             googleLogout();
-            console.log("LOG OUT MUTATION CALLED")
             logout({
                 variables: {
                 },
