@@ -1,6 +1,6 @@
 import React from 'react';
 import { GoogleOAuthProvider, GoogleLogin, } from '@react-oauth/google';
-import SplashScreenBackground from '../components/splashScreenBackground';
+import SplashScreenBackground from '../components/SplashScreenBackground';
 import { validateCredentials } from '../utils/authentication';
 import { graphql, PayloadError } from 'relay-runtime';
 import { useMutation } from 'react-relay';
