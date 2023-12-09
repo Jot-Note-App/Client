@@ -38,9 +38,9 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onLoginCallback }) => {
             <div className="flex min-h-screen">
                 <div className="ml-48 grid place-content-center justify-items-center">
                     <div className="flex items-end mb-8 gap-1">
-                        <div className="text-center text-8xl font-bold">Jot</div>
+                        <div className="text-offBlack text-center text-8xl font-bold">Jot</div>
                     </div>
-                    <p className="text-slate-500 text-xl mb-4">
+                    <p className="text-offBlack text-xl mb-4">
                         Notes with a pulse: Your sentiments, brilliantly organized
                     </p>
                     <GoogleLogin
