@@ -22,9 +22,18 @@ const UserProfileInfo: React.FC<UserProfileInfoProps> = ({ fragment }) => {
         userProfileInfoFragment,
         fragment,
     ) as MainSidePanelUserProfileInfoFragment$data;
+    const firstName = data.firstName.charAt(0).toUpperCase() + data.firstName.slice(1)
+    const lastName = data.firstName.charAt(0).toUpperCase() + data.lastName.slice(1)
     return (
-        <div className="">
-            <ProfileAvatar firstName={data.firstName} lastName={data.lastName} />
+        <div>
+            <div className="flex items-center gap-2">
+                <ProfileAvatar firstName={data.firstName} lastName={data.lastName} />
+                <div className="text-white">
+                    <div className="">{firstName + " " + lastName}</div>
+                    <div className="">{data.email}</div>
+                </div>
+
+            </div>
         </div>
     );
 };
@@ -45,8 +54,9 @@ const MainSidePanel: React.FC = () => {
         {},
     ) as MainSidePanelQuery$data;
     return (
-        <div className="border bg-main min-h-screen w-60">
+        <div className="border bg-main min-h-screen w-60 px-4 py-6 grid grid-flow-row content-between">
             <UserProfileInfo fragment={data.user} />
+            <div>Logout</div>
         </div>
     );
 };
