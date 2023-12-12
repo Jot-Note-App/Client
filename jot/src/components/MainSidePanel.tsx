@@ -4,6 +4,10 @@ import { useFragment, useLazyLoadQuery } from 'react-relay';
 import { MainSidePanelUserProfileInfoFragment$data, MainSidePanelUserProfileInfoFragment$key } from '../__generated__/MainSidePanelUserProfileInfoFragment.graphql'
 import ProfileAvatar from './ProfileAvatar';
 import { MainSidePanelQuery$data } from '../__generated__/MainSidePanelQuery.graphql';
+import ArrowCircleIcon from '../icons/ArrowCircleIcon';
+import BookIcon from '../icons/BookIcon';
+import GoogleLogout from './GoogleLogout';
+import LogoutIcon from '../icons/LogoutIcon';
 interface UserProfileInfoProps {
     fragment: MainSidePanelUserProfileInfoFragment$key;
 }
@@ -38,6 +42,38 @@ const UserProfileInfo: React.FC<UserProfileInfoProps> = ({ fragment }) => {
     );
 };
 
+// interface MainSidePanelJournalItems {
+//     fragment: MainSidePanelUserProfileInfoFragment$key;
+// }
+
+// const userProfileInfoFragment = graphql`
+//   fragment MainSidePanelUserProfileInfoFragment on User {
+//     id
+//     email
+//     firstName
+//     lastName
+//   }
+// `;
+
+const MainSidePanelJournalItems: React.FC = () => {
+
+    return (
+        <div>
+            <div className="flex gap-2 text-white items-center">
+                <BookIcon />
+                <div >
+                    Journals
+                </div>
+            </div>
+            <div className="w-full h-40 bg-white border border-lightGray rounded mt-4">
+                {/* TODO: Add Journals */}
+            </div>
+        </div>
+    );
+};
+
+
+
 
 const mainSidePanelQuery = graphql`
 query MainSidePanelQuery {
@@ -48,15 +84,39 @@ query MainSidePanelQuery {
 }
 `
 
-const MainSidePanel: React.FC = () => {
+interface MainSidePanelProps {
+    onLogoutCallback?: () => void;
+}
+
+const MainSidePanel: React.FC<MainSidePanelProps> = ({ onLogoutCallback }) => {
     const data = useLazyLoadQuery(
         mainSidePanelQuery,
         {},
     ) as MainSidePanelQuery$data;
     return (
         <div className="border bg-main min-h-screen w-60 px-4 py-6 grid grid-flow-row content-between">
-            <UserProfileInfo fragment={data.user} />
-            <div>Logout</div>
+            <div>
+                <div className="flex justify-end">
+                    <div className="text-white hover:cursor-pointer" onClick={() => {/* TODO: Implement onClick */ }}>
+                        <ArrowCircleIcon />
+                    </div>
+                </div>
+                <UserProfileInfo fragment={data.user} />
+                <div className="mt-6">
+                    <MainSidePanelJournalItems />
+                </div>
+            </div>
+
+            <div>
+                <GoogleLogout onLogoutCallback={onLogoutCallback}>
+                    <div className="hover:cursor-pointer text-white flex gap-2 items-center">
+                        <LogoutIcon />
+                        <div >
+                            Sign out
+                        </div>
+                    </div>
+                </GoogleLogout>
+            </div>
         </div>
     );
 };

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { Children } from 'react';
+import { ReactNode } from 'react';
 import { googleLogout } from '@react-oauth/google';
 import { graphql, PayloadError } from 'relay-runtime';
 import { useMutation } from 'react-relay';
@@ -17,9 +18,11 @@ mutation GoogleLogoutLogoutMutation {
 `
 interface GoogleLogoutProps {
     onLogoutCallback?: () => void;
+    children?: ReactNode;
 }
 
-const GoogleLogout: React.FC<GoogleLogoutProps> = ({ onLogoutCallback }) => {
+// Wrap this around buttons to give logout functionality
+const GoogleLogout: React.FC<GoogleLogoutProps> = ({ onLogoutCallback, children }) => {
     const [logout, _isLoggingOut] = useMutation(googleLogoutLogoutMutation);
     const onLogoutComplete = (response: {}, _errors: PayloadError[] | null) => {
         const res = response as GoogleLogoutLogoutMutation$data;
@@ -38,8 +41,8 @@ const GoogleLogout: React.FC<GoogleLogoutProps> = ({ onLogoutCallback }) => {
             if (onLogoutCallback != undefined) {
                 onLogoutCallback()
             }
-        }} className="text-sm p-2 border border-slate-300 cursor-pointer rounded text-center align-middle w-24 h-10">
-            Sign out
+        }} >
+            {children}
         </div >
     );
 };
