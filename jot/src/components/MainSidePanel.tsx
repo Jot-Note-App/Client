@@ -58,17 +58,14 @@ const UserProfileInfo: React.FC<UserProfileInfoProps> = ({ fragment }) => {
 const MainSidePanelJournalItems: React.FC = () => {
 
     return (
-        <div>
-            <div className="flex gap-2 text-white items-center">
-                <BookIcon />
-                <div >
-                    Journals
-                </div>
-            </div>
-            <div className="w-full h-40 bg-white border border-lightGray rounded mt-4">
-                {/* TODO: Add Journals */}
+
+        <div className="flex gap-2 text-white items-center">
+            <BookIcon />
+            <div >
+                Journals
             </div>
         </div>
+
     );
 };
 
