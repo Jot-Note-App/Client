@@ -8,6 +8,7 @@ import ArrowCircleIcon from '../icons/ArrowCircleIcon';
 import BookIcon from '../icons/BookIcon';
 import GoogleLogout from './GoogleLogout';
 import LogoutIcon from '../icons/LogoutIcon';
+import { MainPanelTab } from '../enums/MainPanelTab';
 interface UserProfileInfoProps {
     fragment: MainSidePanelUserProfileInfoFragment$key;
 }
@@ -83,9 +84,11 @@ query MainSidePanelQuery {
 
 interface MainSidePanelProps {
     onLogoutCallback?: () => void;
+    selectedTab: MainPanelTab;
+    setSelectedTab: (newTab: MainPanelTab) => void;
 }
 
-const MainSidePanel: React.FC<MainSidePanelProps> = ({ onLogoutCallback }) => {
+const MainSidePanel: React.FC<MainSidePanelProps> = ({ onLogoutCallback, selectedTab, setSelectedTab }) => {
     const data = useLazyLoadQuery(
         mainSidePanelQuery,
         {},
