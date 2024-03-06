@@ -45,6 +45,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onLoginCallback }) => {
                     </p>
                     <GoogleLogin
                         onSuccess={credentialResponse => {
+                            console.log(credentialResponse)
                             if (validateCredentials(credentialResponse.credential ?? '')) {
                                 login({
                                     variables: {

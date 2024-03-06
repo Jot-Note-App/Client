@@ -30,7 +30,7 @@ const JournalSelector: React.FC = () => {
 }
 
 const mainPanelQuery = graphql`
-query MainPanelQuery($entryId: ID){
+query MainPanelQuery{
   user {
     id
     ...MainPanelJournalSelectorFragment
@@ -39,7 +39,7 @@ query MainPanelQuery($entryId: ID){
 
 const MainPanel: React.FC<MainPanelProps> = ({ selectedTab }) => {
     const [currEntryId, setCurrEntry] = useState<string | null>(null)
-    // const data = useLazyLoadQuery(mainPanelQuery, { currEntryId });
+    const data = useLazyLoadQuery(mainPanelQuery, {});
     useEffect(() => {
         const storedLastEntry = localStorage.getItem('lastEntryId');
         if (storedLastEntry) {

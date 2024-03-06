@@ -11,7 +11,7 @@ type DeleteMutationSuccess {
 type DeleteUserSuccess {
   success: Boolean!
 }
-type Entry {
+type Entry implements Node {
   id: ID!
   journal: Journal!
   content: String
@@ -20,6 +20,7 @@ type Entry {
 type EntryConnection {
   edges: [EntryEdge!]!
   pageInfo: PageInfo!
+  totalCount: Int!
 }
 type EntryEdge {
   cursor: String!
@@ -28,17 +29,18 @@ type EntryEdge {
 type EntryMutationSuccess {
   entry: Entry!
 }
-type Journal {
+type Journal implements Node {
   id: ID!
   user: User!
   name: String!
   ordinal: Int!
-  entries(first: Int = 20, after: ID): EntryConnection
+  entries(first: Int = 20, after: ID, search: String): EntryConnection
   templates(first: Int = 20, after: ID): JournalTemplateConnection
 }
 type JournalConnection {
   edges: [JournalEdge!]!
   pageInfo: PageInfo!
+  totalCount: Int!
 }
 type JournalEdge {
   cursor: String!
@@ -55,6 +57,7 @@ type JournalTemplate {
 type JournalTemplateConnection {
   edges: [JournalTemplateEdge!]!
   pageInfo: PageInfo!
+  totalCount: Int!
 }
 type JournalTemplateEdge {
   cursor: String!
@@ -95,6 +98,7 @@ type PageInfo {
   endCursor: String
 }
 type Query {
+  node(id: ID!): Node
   user: User!
   isLoggedIn: Boolean!
 }
@@ -108,6 +112,10 @@ type User {
   email: String!
   journals(first: Int = 20, after: ID): JournalConnection
   templates(first: Int = 20, after: ID): JournalTemplateConnection
+  lastUpdatedEntry: Entry
+}
+interface Node {
+  id: ID!
 }
 union CreateUserResponse = CreateUserSuccess | MutationFailure
 union DeleteMutationResponse = DeleteMutationSuccess | MutationFailure
