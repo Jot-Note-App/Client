@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { graphql, PayloadError, FragmentRef } from 'relay-runtime';
 import { useFragment, useLazyLoadQuery } from 'react-relay';
 import { MainSidePanelUserProfileInfoFragment$data, MainSidePanelUserProfileInfoFragment$key } from '../__generated__/MainSidePanelUserProfileInfoFragment.graphql'
@@ -11,6 +11,7 @@ import LogoutIcon from '../icons/LogoutIcon';
 import { MainPanelTab } from '../enums/MainPanelTab';
 interface UserProfileInfoProps {
     fragment: MainSidePanelUserProfileInfoFragment$key;
+    hideDetails?: boolean;
 }
 
 const userProfileInfoFragment = graphql`
@@ -22,7 +23,7 @@ const userProfileInfoFragment = graphql`
   }
 `;
 
-const UserProfileInfo: React.FC<UserProfileInfoProps> = ({ fragment }) => {
+const UserProfileInfo: React.FC<UserProfileInfoProps> = ({ fragment, hideDetails = false }) => {
     const data = useFragment(
         userProfileInfoFragment,
         fragment,
@@ -30,16 +31,17 @@ const UserProfileInfo: React.FC<UserProfileInfoProps> = ({ fragment }) => {
     const firstName = data.firstName.charAt(0).toUpperCase() + data.firstName.slice(1)
     const lastName = data.firstName.charAt(0).toUpperCase() + data.lastName.slice(1)
     return (
-        <div>
-            <div className="flex items-center gap-2">
-                <ProfileAvatar firstName={data.firstName} lastName={data.lastName} />
+
+        <div className="flex items-center gap-2">
+            <ProfileAvatar firstName={data.firstName} lastName={data.lastName} />
+            {!hideDetails &&
                 <div className="text-white">
                     <div className="">{firstName + " " + lastName}</div>
-                    <div className="">{data.email}</div>
-                </div>
+                    <div className="text-sm">{data.email}</div>
+                </div>}
 
-            </div>
         </div>
+
     );
 };
 
@@ -94,26 +96,20 @@ const MainSidePanel: React.FC<MainSidePanelProps> = ({ onLogoutCallback, selecte
         {},
     ) as MainSidePanelQuery$data;
     return (
-        <div className="border bg-main min-h-screen w-60 px-4 py-6 grid grid-flow-row content-between">
+        <div className="border bg-main min-h-screen px-4 py-6 grid grid-flow-row content-between justify-items-center">
             <div>
-                <div className="flex justify-end">
-                    <div className="text-white hover:cursor-pointer" onClick={() => {/* TODO: Implement onClick */ }}>
-                        <ArrowCircleIcon />
+                <UserProfileInfo fragment={data.user} hideDetails={true} />
+                <div className="mt-6 ">
+                    <div className="flex gap-2 text-white items-center justify-center">
+                        <BookIcon />
                     </div>
-                </div>
-                <UserProfileInfo fragment={data.user} />
-                <div className="mt-6">
-                    <MainSidePanelJournalItems />
                 </div>
             </div>
 
             <div>
                 <GoogleLogout onLogoutCallback={onLogoutCallback}>
-                    <div className="hover:cursor-pointer text-white flex gap-2 items-center">
+                    <div className="hover:cursor-pointer text-white flex gap-2 items-center justify-center">
                         <LogoutIcon />
-                        <div >
-                            Sign out
-                        </div>
                     </div>
                 </GoogleLogout>
             </div>
