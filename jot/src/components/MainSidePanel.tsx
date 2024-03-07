@@ -32,7 +32,7 @@ const UserProfileInfo: React.FC<UserProfileInfoProps> = ({ fragment, hideDetails
     const lastName = data.firstName.charAt(0).toUpperCase() + data.lastName.slice(1)
     return (
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-center gap-2">
             <ProfileAvatar firstName={data.firstName} lastName={data.lastName} />
             {!hideDetails &&
                 <div className="text-white">
@@ -91,6 +91,7 @@ interface MainSidePanelProps {
 }
 
 const MainSidePanel: React.FC<MainSidePanelProps> = ({ onLogoutCallback, selectedTab, setSelectedTab }) => {
+    console.log(selectedTab)
     const data = useLazyLoadQuery(
         mainSidePanelQuery,
         {},
@@ -98,18 +99,24 @@ const MainSidePanel: React.FC<MainSidePanelProps> = ({ onLogoutCallback, selecte
     return (
         <div className="border bg-main min-h-screen px-4 py-6 grid grid-flow-row content-between justify-items-center">
             <div>
-                <UserProfileInfo fragment={data.user} hideDetails={true} />
-                <div className="mt-6 ">
-                    <div className="flex gap-2 text-white items-center justify-center">
-                        <BookIcon />
+                <div className="justify-center">
+                    <UserProfileInfo fragment={data.user} hideDetails={true} />
+                </div>
+                <div className="mt-4">
+                    <div className={"bg-mainDark rounded p-4 hover:cursor-pointer text-secondary"}>
+                        <div className="flex gap-2 items-center justify-center">
+                            <BookIcon />
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div>
                 <GoogleLogout onLogoutCallback={onLogoutCallback}>
-                    <div className="hover:cursor-pointer text-white flex gap-2 items-center justify-center">
-                        <LogoutIcon />
+                    <div className={"hover:bg-mainDark rounded p-4 hover:cursor-pointer text-white hover:text-secondary"}>
+                        <div className="flex gap-2 items-center justify-center">
+                            <LogoutIcon />
+                        </div>
                     </div>
                 </GoogleLogout>
             </div>
