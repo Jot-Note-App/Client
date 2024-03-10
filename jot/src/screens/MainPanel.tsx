@@ -89,7 +89,7 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect, d
     }, [])
     return (
         <div className="w-full">
-            <div className="p-2 flex justify-between items-center hover:cursor-pointer bg-gray-300" ref={refs.setReference} {...getReferenceProps()} onClick={() => setIsOpen(!isOpen)}>
+            <div className="p-2 flex justify-between items-center hover:cursor-pointer bg-gray-300 text-subheading" ref={refs.setReference} {...getReferenceProps()} onClick={() => setIsOpen(!isOpen)}>
                 {selectedLabel}
                 <ArrowIcon orientation={isOpen ? 'up' : 'down'} />
             </div>
