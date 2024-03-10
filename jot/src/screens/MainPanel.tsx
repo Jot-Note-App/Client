@@ -8,6 +8,7 @@ import { MainPanelQuery$data } from '../__generated__/MainPanelQuery.graphql';
 import { MainPanelEntriesFeedFragment$data, MainPanelEntriesFeedFragment$key } from '../__generated__/MainPanelEntriesFeedFragment.graphql';
 import { MainPanelJournalSelectorFragment$data, MainPanelJournalSelectorFragment$key } from '../__generated__/MainPanelJournalSelectorFragment.graphql';
 import ArrowIcon from '../icons/ArrowIcon';
+import Search from '../components/Search';
 interface MainPanelProps {
     selectedTab: MainPanelTab;
 }
@@ -89,20 +90,29 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect, d
     }, [])
     return (
         <div className="w-full">
-            <div className="p-2 flex justify-between items-center hover:cursor-pointer bg-gray-300 text-subheading" ref={refs.setReference} {...getReferenceProps()} onClick={() => setIsOpen(!isOpen)}>
+            <div className="p-2 flex justify-between items-center hover:cursor-pointer bg-lightGray border-b border-mediumGray text-subheading" ref={refs.setReference} {...getReferenceProps()} onClick={() => setIsOpen(!isOpen)}>
                 {selectedLabel}
                 <ArrowIcon orientation={isOpen ? 'up' : 'down'} />
             </div>
             {isOpen && (
-                <div className="bg-white border border-gray-200 shadow-md w-60 rounded mt-0.5" ref={refs.setFloating} style={floatingStyles} {...getFloatingProps()}>
+                <div className="bg-white border border-lightGray shadow-md w-60 rounded mt-0.5" ref={refs.setFloating} style={floatingStyles} {...getFloatingProps()}>
                     <FloatingList elementsRef={elementsRef} labelsRef={labelsRef}>
-
                         {options.map((option) => (
                             <JournalSelectorRow id={option.id} isSelected={option.id === selectedId} label={option.label} onSelect={handleSelect} />))}
-
                     </FloatingList>
                 </div>
             )}
+        </div>
+    );
+}
+
+interface EntriesFeedFiltersProps {
+    onSearchChange: (search: string) => void;
+}
+const EntriesFeedFilters: React.FC<EntriesFeedFiltersProps> = ({ onSearchChange }) => {
+    return (
+        <div className="bg-faintGray border-b border-mediumGray p-6">
+            <Search onSearchChange={onSearchChange} />
         </div>
     );
 }
@@ -139,7 +149,7 @@ const EntriesFeed: React.FC<EntriesFeedProps> = ({ fragment }) => {
         fragment,
     ) as MainPanelEntriesFeedFragment$data
     return (
-        <div className="w-full h-full bg-slate-300">
+        <div className="w-full h-full bg-white">
             <div>Entries Feed</div>
         </div>
     );
@@ -174,11 +184,10 @@ const MainPanel: React.FC<MainPanelProps> = ({ selectedTab }) => {
     }
 
     return (
-        <div className="grid grid-flow-row">
-            <div className="w-60"><JournalSelector fragment={data.user} onSelect={onJournalSelected} /></div>
-            <div className="w-full h-full bg-slate-300">
-                <div>Entries Feed</div>
-            </div>
+        <div className="grid grid-flow-row w-80 border-x border-mediumGray" style={{ gridTemplateRows: 'auto auto 1fr' }}>
+            <JournalSelector fragment={data.user} onSelect={onJournalSelected} />
+            <EntriesFeedFilters onSearchChange={() => { }} />
+            <EntriesFeed fragment={data.user} />
         </div>
     );
 };
