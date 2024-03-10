@@ -21,7 +21,7 @@ const Search: React.FC<SearchProps> = ({ onSearchChange, onSubmit }) => {
     return (
         <form onSubmit={handleSubmit} className="bg-white rounded-full py-0.5 flex items-center border border-mediumGray">
             <div className="text-mediumGray ml-2"><MagnifyingGlassIcon /></div>
-            <input className="outline-none px-2 rounded-full w-full" value={searchValue} onChange={handleSearchChange} placeholder="Type to search..." />
+            <input className="outline-none px-2 rounded-full w-full text-regular" value={searchValue} onChange={handleSearchChange} placeholder="Type to search..." />
         </form>
     );
 }

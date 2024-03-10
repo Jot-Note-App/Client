@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<fd373be80e369b65ba1de702da8afd35>>
+ * @generated SignedSource<<5f780bbd9ea8da022506493cb2996a6d>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -17,8 +17,8 @@ export type MainPanelEntriesFeedFragment$data = {
         readonly entries: {
           readonly edges: ReadonlyArray<{
             readonly node: {
-              readonly content: string | null | undefined;
               readonly id: string;
+              readonly " $fragmentSpreads": FragmentRefs<"MainPanelEntryRowFragment">;
             };
           }>;
         } | null | undefined;
@@ -114,11 +114,9 @@ return {
                           "selections": [
                             (v0/*: any*/),
                             {
-                              "alias": null,
                               "args": null,
-                              "kind": "ScalarField",
-                              "name": "content",
-                              "storageKey": null
+                              "kind": "FragmentSpread",
+                              "name": "MainPanelEntryRowFragment"
                             }
                           ],
                           "storageKey": null
@@ -144,6 +142,6 @@ return {
 };
 })();
 
-(node as any).hash = "8978e85eea48fbc45e015da589f4d48f";
+(node as any).hash = "0a5f3e30529937381f57416f5c9f8aef";
 
 export default node;
