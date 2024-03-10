@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<01488b976136d0d43f1f8383fffcc905>>
+ * @generated SignedSource<<8b8667f743996ce1e30ab3fba616b4b8>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -14,7 +14,7 @@ export type MainPanelQuery$variables = Record<PropertyKey, never>;
 export type MainPanelQuery$data = {
   readonly user: {
     readonly id: string;
-    readonly " $fragmentSpreads": FragmentRefs<"MainPanelJournalSelectorFragment">;
+    readonly " $fragmentSpreads": FragmentRefs<"MainPanelEntriesFeedFragment" | "MainPanelJournalSelectorFragment">;
   };
 };
 export type MainPanelQuery = {
@@ -28,6 +28,13 @@ var v0 = {
   "args": null,
   "kind": "ScalarField",
   "name": "id",
+  "storageKey": null
+},
+v1 = {
+  "alias": null,
+  "args": null,
+  "kind": "ScalarField",
+  "name": "name",
   "storageKey": null
 };
 return {
@@ -50,6 +57,11 @@ return {
             "args": null,
             "kind": "FragmentSpread",
             "name": "MainPanelJournalSelectorFragment"
+          },
+          {
+            "args": null,
+            "kind": "FragmentSpread",
+            "name": "MainPanelEntriesFeedFragment"
           }
         ],
         "storageKey": null
@@ -74,7 +86,7 @@ return {
         "selections": [
           (v0/*: any*/),
           {
-            "alias": null,
+            "alias": "journalSelectorJournals",
             "args": [
               {
                 "kind": "Literal",
@@ -104,11 +116,87 @@ return {
                     "plural": false,
                     "selections": [
                       (v0/*: any*/),
+                      (v1/*: any*/)
+                    ],
+                    "storageKey": null
+                  }
+                ],
+                "storageKey": null
+              }
+            ],
+            "storageKey": "journals(first:100)"
+          },
+          {
+            "alias": "entriesFeedJournals",
+            "args": [
+              {
+                "kind": "Literal",
+                "name": "first",
+                "value": 1
+              }
+            ],
+            "concreteType": "JournalConnection",
+            "kind": "LinkedField",
+            "name": "journals",
+            "plural": false,
+            "selections": [
+              {
+                "alias": null,
+                "args": null,
+                "concreteType": "JournalEdge",
+                "kind": "LinkedField",
+                "name": "edges",
+                "plural": true,
+                "selections": [
+                  {
+                    "alias": null,
+                    "args": null,
+                    "concreteType": "Journal",
+                    "kind": "LinkedField",
+                    "name": "node",
+                    "plural": false,
+                    "selections": [
+                      (v0/*: any*/),
+                      (v1/*: any*/),
                       {
                         "alias": null,
                         "args": null,
-                        "kind": "ScalarField",
-                        "name": "name",
+                        "concreteType": "EntryConnection",
+                        "kind": "LinkedField",
+                        "name": "entries",
+                        "plural": false,
+                        "selections": [
+                          {
+                            "alias": null,
+                            "args": null,
+                            "concreteType": "EntryEdge",
+                            "kind": "LinkedField",
+                            "name": "edges",
+                            "plural": true,
+                            "selections": [
+                              {
+                                "alias": null,
+                                "args": null,
+                                "concreteType": "Entry",
+                                "kind": "LinkedField",
+                                "name": "node",
+                                "plural": false,
+                                "selections": [
+                                  (v0/*: any*/),
+                                  {
+                                    "alias": null,
+                                    "args": null,
+                                    "kind": "ScalarField",
+                                    "name": "content",
+                                    "storageKey": null
+                                  }
+                                ],
+                                "storageKey": null
+                              }
+                            ],
+                            "storageKey": null
+                          }
+                        ],
                         "storageKey": null
                       }
                     ],
@@ -118,7 +206,7 @@ return {
                 "storageKey": null
               }
             ],
-            "storageKey": "journals(first:100)"
+            "storageKey": "journals(first:1)"
           }
         ],
         "storageKey": null
@@ -126,16 +214,16 @@ return {
     ]
   },
   "params": {
-    "cacheID": "89ee379068bc14c31655312191e176c4",
+    "cacheID": "5102819e00543312aa6b406db69d0a61",
     "id": null,
     "metadata": {},
     "name": "MainPanelQuery",
     "operationKind": "query",
-    "text": "query MainPanelQuery {\n  user {\n    id\n    ...MainPanelJournalSelectorFragment\n  }\n}\n\nfragment MainPanelJournalSelectorFragment on User {\n  id\n  journals(first: 100) {\n    edges {\n      node {\n        id\n        name\n      }\n    }\n  }\n}\n"
+    "text": "query MainPanelQuery {\n  user {\n    id\n    ...MainPanelJournalSelectorFragment\n    ...MainPanelEntriesFeedFragment\n  }\n}\n\nfragment MainPanelEntriesFeedFragment on User {\n  id\n  entriesFeedJournals: journals(first: 1) {\n    edges {\n      node {\n        id\n        name\n        entries {\n          edges {\n            node {\n              id\n              content\n            }\n          }\n        }\n      }\n    }\n  }\n}\n\nfragment MainPanelJournalSelectorFragment on User {\n  id\n  journalSelectorJournals: journals(first: 100) {\n    edges {\n      node {\n        id\n        name\n      }\n    }\n  }\n}\n"
   }
 };
 })();
 
-(node as any).hash = "93f10179ca9a6a38cd1bebd8b678b57c";
+(node as any).hash = "616a21472403cbb09d45152d57c7e43f";
 
 export default node;

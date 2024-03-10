@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<15f804eebdbd6fd3f0a064766ed4704f>>
+ * @generated SignedSource<<184290a38d796a82211000ef6cb3c0fb>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -12,7 +12,7 @@ import { Fragment, ReaderFragment } from 'relay-runtime';
 import { FragmentRefs } from "relay-runtime";
 export type MainPanelJournalSelectorFragment$data = {
   readonly id: string;
-  readonly journals: {
+  readonly journalSelectorJournals: {
     readonly edges: ReadonlyArray<{
       readonly node: {
         readonly id: string;
@@ -43,7 +43,7 @@ return {
   "selections": [
     (v0/*: any*/),
     {
-      "alias": null,
+      "alias": "journalSelectorJournals",
       "args": [
         {
           "kind": "Literal",
@@ -95,6 +95,6 @@ return {
 };
 })();
 
-(node as any).hash = "959e96020a5a88cd383b7a168ef2acbd";
+(node as any).hash = "88f27156d15dd92dc3c94f13317d8e92";
 
 export default node;
