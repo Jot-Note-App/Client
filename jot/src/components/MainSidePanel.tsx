@@ -97,7 +97,7 @@ const MainSidePanel: React.FC<MainSidePanelProps> = ({ onLogoutCallback, selecte
         {},
     ) as MainSidePanelQuery$data;
     return (
-        <div className="border bg-main min-h-screen px-4 py-6 grid grid-flow-row content-between justify-items-center">
+        <div className=" bg-main min-h-screen px-4 py-6 grid grid-flow-row content-between justify-items-center">
             <div>
                 <div className="justify-center">
                     <UserProfileInfo fragment={data.user} hideDetails={true} />
