@@ -28,8 +28,8 @@ export default {
         h4: ["24px", { lineHeight: "35px", fontWeight: "700" }],
         h5: ["20px", { lineHeight: "30px", fontWeight: "700" }],
         subheading: ["17px", { lineHeight: "28px", fontWeight: "700" }],
-        large: ["16px", { lineHeight: "24px", fontWeight: "500" }],
-        regular: ["14px", { lineHeight: "24px", fontWeight: "500" }],
+        large: ["16px", { lineHeight: "24px", fontWeight: "400" }],
+        regular: ["14px", { lineHeight: "24px", fontWeight: "400" }],
         small: ["12px", { lineHeight: "20px", fontWeight: "500" }],
         xSmall: ["11px", { lineHeight: "16px", fontWeight: "500" }],
       }

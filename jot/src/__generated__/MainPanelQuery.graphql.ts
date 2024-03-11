@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<8b8667f743996ce1e30ab3fba616b4b8>>
+ * @generated SignedSource<<d9ff0def50857c808ee270a84b399bde>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -187,6 +187,20 @@ return {
                                     "alias": null,
                                     "args": null,
                                     "kind": "ScalarField",
+                                    "name": "title",
+                                    "storageKey": null
+                                  },
+                                  {
+                                    "alias": null,
+                                    "args": null,
+                                    "kind": "ScalarField",
+                                    "name": "createdAt",
+                                    "storageKey": null
+                                  },
+                                  {
+                                    "alias": null,
+                                    "args": null,
+                                    "kind": "ScalarField",
                                     "name": "content",
                                     "storageKey": null
                                   }
@@ -214,12 +228,12 @@ return {
     ]
   },
   "params": {
-    "cacheID": "5102819e00543312aa6b406db69d0a61",
+    "cacheID": "30f339c209f3e7a52c80c6d72d2d0e52",
     "id": null,
     "metadata": {},
     "name": "MainPanelQuery",
     "operationKind": "query",
-    "text": "query MainPanelQuery {\n  user {\n    id\n    ...MainPanelJournalSelectorFragment\n    ...MainPanelEntriesFeedFragment\n  }\n}\n\nfragment MainPanelEntriesFeedFragment on User {\n  id\n  entriesFeedJournals: journals(first: 1) {\n    edges {\n      node {\n        id\n        name\n        entries {\n          edges {\n            node {\n              id\n              content\n            }\n          }\n        }\n      }\n    }\n  }\n}\n\nfragment MainPanelJournalSelectorFragment on User {\n  id\n  journalSelectorJournals: journals(first: 100) {\n    edges {\n      node {\n        id\n        name\n      }\n    }\n  }\n}\n"
+    "text": "query MainPanelQuery {\n  user {\n    id\n    ...MainPanelJournalSelectorFragment\n    ...MainPanelEntriesFeedFragment\n  }\n}\n\nfragment MainPanelEntriesFeedFragment on User {\n  id\n  entriesFeedJournals: journals(first: 1) {\n    edges {\n      node {\n        id\n        name\n        entries {\n          edges {\n            node {\n              id\n              ...MainPanelEntryRowFragment\n            }\n          }\n        }\n      }\n    }\n  }\n}\n\nfragment MainPanelEntryRowFragment on Entry {\n  id\n  title\n  createdAt\n  content\n}\n\nfragment MainPanelJournalSelectorFragment on User {\n  id\n  journalSelectorJournals: journals(first: 100) {\n    edges {\n      node {\n        id\n        name\n      }\n    }\n  }\n}\n"
   }
 };
 })();

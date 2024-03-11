@@ -2,6 +2,7 @@ schema {
   query: Query
   mutation: Mutation
 }
+scalar Time
 type CreateUserSuccess {
   user: User!
 }
@@ -14,8 +15,11 @@ type DeleteUserSuccess {
 type Entry implements Node {
   id: ID!
   journal: Journal!
+  title: String
   content: String
   user: User!
+  createdAt: Time!
+  updatedAt: Time!
 }
 type EntryConnection {
   edges: [EntryEdge!]!
@@ -36,6 +40,8 @@ type Journal implements Node {
   ordinal: Int!
   entries(first: Int = 20, after: ID, search: String): EntryConnection
   templates(first: Int = 20, after: ID): JournalTemplateConnection
+  createdAt: Time!
+  updatedAt: Time!
 }
 type JournalConnection {
   edges: [JournalEdge!]!
@@ -53,6 +59,8 @@ type JournalTemplate {
   id: ID!
   journal: Journal!
   content: String
+  createdAt: Time!
+  updatedAt: Time!
 }
 type JournalTemplateConnection {
   edges: [JournalTemplateEdge!]!
@@ -113,6 +121,8 @@ type User {
   journals(first: Int = 20, after: ID): JournalConnection
   templates(first: Int = 20, after: ID): JournalTemplateConnection
   lastUpdatedEntry: Entry
+  createdAt: Time!
+  updatedAt: Time!
 }
 interface Node {
   id: ID!
@@ -129,7 +139,6 @@ union UpdateUserResponse = UpdateUserSuccess | MutationFailure
 input CreateEntryInput {
   journalId: ID!
   content: String!
-  userId: ID!
 }
 input CreateJournalInput {
   userId: ID!
@@ -142,6 +151,7 @@ input CreateUserInput {
 }
 input UpdateEntryInput {
   journalId: ID
+  title: String
   content: String
 }
 input UpdateJournalInput {
