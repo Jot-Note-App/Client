@@ -121,6 +121,8 @@ const EntriesFeedFilters: React.FC<EntriesFeedFiltersProps> = ({ onSearchChange 
 const entryRowFragment = graphql`
   fragment MainPanelEntryRowFragment on Entry {
     id
+    title
+    createdAt
     content
   }
 `;
@@ -136,12 +138,12 @@ const EntryRow: React.FC<EntryRowProps> = ({ fragment, onSelect, isSelected }) =
         entryRowFragment,
         fragment,
     ) as MainPanelEntryRowFragment$data;
+
     return (
         <div className={`hover:bg-secondary hover:cursor-pointer w-full h-16 border-b border-mediumGray py-2 px-5 grid grid-flow-row items-center ${isSelected ? "bg-secondary" : "bg-white"}`} style={{ gridTemplateRows: 'auto 1fr' }}>
             <div className="grid grid-flow-col justify-between items-center">
-                {/* TODO: Add dynamic title and date */}
-                <div className="text-regular font-bold truncate">Title</div>
-                <div className="text-small text-darkGray">10 Nov 2023</div>
+                <div className={`text-regular font-semibold truncate ${!data.title && "text-darkGray"}`}>{data.title ? data.title : "Untitled note"}</div>
+                <div className="text-small text-darkGray">{new Date(data.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
             </div>
             <div className="truncate text-regular">
                 {data.content}
@@ -182,7 +184,7 @@ const EntriesFeed: React.FC<EntriesFeedProps> = ({ fragment }) => {
         fragment,
     ) as MainPanelEntriesFeedFragment$data
     return (
-        <div className="w-full h-full bg-white">
+        <div className="w-full bg-white overflow-auto">
             {data.entriesFeedJournals?.edges.map((edge) => {
                 return edge.node.entries?.edges.map((edge) => {
                     return <EntryRow fragment={edge.node} onSelect={(id) => { }} isSelected={false} />
@@ -221,7 +223,7 @@ const MainPanel: React.FC<MainPanelProps> = ({ selectedTab }) => {
     }
 
     return (
-        <div className="grid grid-flow-row w-80 border-x border-mediumGray" style={{ gridTemplateRows: 'auto auto 1fr' }}>
+        <div className="h-screen grid grid-flow-row w-80 border-x border-mediumGray" style={{ gridTemplateRows: 'auto auto 1fr' }}>
             <JournalSelector fragment={data.user} onSelect={onJournalSelected} />
             <EntriesFeedFilters onSearchChange={() => { }} />
             <EntriesFeed fragment={data.user} />
