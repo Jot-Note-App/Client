@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { MainPanelTab } from '../enums/MainPanelTab';
 import { graphql, PayloadError, FragmentRef } from 'relay-runtime';
 import { useFragment, useLazyLoadQuery } from 'react-relay';
@@ -47,17 +47,33 @@ const JournalSelectorRow: React.FC<JournalSelectorRowProps> = ({ id, isSelected,
 interface JournalSelectorProps {
     fragment: MainPanelJournalSelectorFragment$key;
     onSelect: (journalId: string) => void;
-    defaultSelectedJournalId?: string;
 }
 
-const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect, defaultSelectedJournalId = null }) => {
+const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect }) => {
     const data = useFragment(
         journalSelectorFragment,
         fragment,
     ) as MainPanelJournalSelectorFragment$data;
+
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedId, setSelectedId] = useState<string | null>(defaultSelectedJournalId);
-    const [selectedLabel, setSelectedLabel] = useState<string>('Journals');
+    const [selectedId, setSelectedId] = useState<string | null>(null);
+    const [selectedLabel, setSelectedLabel] = useState<string>('');
+    const lastJournalKey = 'lastJournalId'
+    useEffect(() => {
+        const storedLastJournalId = localStorage.getItem(lastJournalKey);
+        if (storedLastJournalId) {
+            console.log("Found last journal id: " + storedLastJournalId)
+            setSelectedId(storedLastJournalId);
+            const selectedJournal = data.journalSelectorJournals?.edges.find((edge) => edge.node.id == storedLastJournalId)
+            setSelectedLabel(selectedJournal?.node.name || 'Journals');
+        }
+    }, []);
+    useEffect(() => {
+        if (selectedId) {
+            console.log("storing new journal id: " + selectedId)
+            localStorage.setItem(lastJournalKey, selectedId)
+        }
+    }, [selectedId])
     const { context, refs, floatingStyles } = useFloating({
         strategy: 'fixed',
         placement: 'bottom-start',
@@ -85,10 +101,12 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect, d
     }) : [];
     const { getReferenceProps, getFloatingProps } = useInteractions([listNav, typeahead, click, dismiss, role]);
     const handleSelect = useCallback((id: string) => {
+        onSelect(id)
         setSelectedId(id)
         setSelectedLabel(options.find((option) => option.id == id)?.label || '')
         setIsOpen(false)
     }, [])
+
     return (
         <div className="w-full">
             <div className="p-2 flex justify-between items-center hover:cursor-pointer bg-lightGray border-b border-mediumGray text-subheading" ref={refs.setReference} {...getReferenceProps()} onClick={() => setIsOpen(!isOpen)}>
@@ -99,7 +117,7 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect, d
                 <div className="bg-white border border-lightGray shadow-md w-60 rounded mt-0.5" ref={refs.setFloating} style={floatingStyles} {...getFloatingProps()}>
                     <FloatingList elementsRef={elementsRef} labelsRef={labelsRef}>
                         {options.map((option) => (
-                            <JournalSelectorRow id={option.id} isSelected={option.id === selectedId} label={option.label} onSelect={handleSelect} />))}
+                            <JournalSelectorRow key={option.id} id={option.id} isSelected={option.id === selectedId} label={option.label} onSelect={handleSelect} />))}
                     </FloatingList>
                 </div>
             )}
@@ -108,12 +126,12 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect, d
 }
 
 interface EntriesFeedFiltersProps {
-    onSearchChange: (search: string) => void;
+    onSearchSubmit: (search: string) => void;
 }
-const EntriesFeedFilters: React.FC<EntriesFeedFiltersProps> = ({ onSearchChange }) => {
+const EntriesFeedFilters: React.FC<EntriesFeedFiltersProps> = ({ onSearchSubmit }) => {
     return (
         <div className="bg-faintGray border-b border-mediumGray p-6">
-            <Search onSearchChange={onSearchChange} />
+            <Search onSubmit={onSearchSubmit} />
         </div>
     );
 }
@@ -153,14 +171,21 @@ const EntryRow: React.FC<EntryRowProps> = ({ fragment, onSelect, isSelected }) =
 }
 
 const entriesFeedFragment = graphql`
-  fragment MainPanelEntriesFeedFragment on User {
+  fragment MainPanelEntriesFeedFragment on User @argumentDefinitions(
+    id: {type: "ID", defaultValue: null}
+    after: { type: "ID", defaultValue: null }
+  ) {
     id
-    entriesFeedJournals: journals(first: 1){
+    entriesFeedJournals: journals(first: 1, id: $id){
         edges {
             node {
                 id
                 name
-                entries{
+                entries(first:10, after: $after)@connection(key: "MainPanelEntriesFeedFragment_entries"){
+                    pageInfo {
+                        hasNextPage
+                        endCursor
+                    }
                     edges{
                         node{
                             id
@@ -187,7 +212,7 @@ const EntriesFeed: React.FC<EntriesFeedProps> = ({ fragment }) => {
         <div className="w-full bg-white overflow-auto">
             {data.entriesFeedJournals?.edges.map((edge) => {
                 return edge.node.entries?.edges.map((edge) => {
-                    return <EntryRow fragment={edge.node} onSelect={(id) => { }} isSelected={false} />
+                    return <EntryRow key={edge.node.id} fragment={edge.node} onSelect={(id) => { }} isSelected={false} />
                 })
             })}
         </div>
@@ -195,38 +220,32 @@ const EntriesFeed: React.FC<EntriesFeedProps> = ({ fragment }) => {
 }
 
 const mainPanelQuery = graphql`
-query MainPanelQuery{
+query MainPanelQuery($after: ID, $journalId: ID){
   user {
     id
     ...MainPanelJournalSelectorFragment
-    ...MainPanelEntriesFeedFragment
+    ...MainPanelEntriesFeedFragment @arguments(after: $after, id: $journalId)
   }
 }`;
 
 const MainPanel: React.FC<MainPanelProps> = ({ selectedTab }) => {
     const [currJournalId, setCurrJournalId] = useState<string | null>(null)
-    const lastJournalKey = 'lastJournalId'
-    const data = useLazyLoadQuery(mainPanelQuery, {}) as MainPanelQuery$data;
-    useEffect(() => {
-        const storedLastJournalId = localStorage.getItem(lastJournalKey);
-        if (storedLastJournalId) {
-            setCurrJournalId(storedLastJournalId);
-        }
-    }, []);
-    useEffect(() => {
-        if (currJournalId) {
-            localStorage.setItem(lastJournalKey, currJournalId)
-        }
-    }, [currJournalId])
+    const [searchTerm, setSearchTerm] = useState<string | null>(null)
+    const data = useLazyLoadQuery(mainPanelQuery, { after: null, journalId: currJournalId }) as MainPanelQuery$data;
+
     function onJournalSelected(journalId: string) {
         setCurrJournalId(journalId);
     }
 
+
+
     return (
         <div className="h-screen grid grid-flow-row w-80 border-x border-mediumGray" style={{ gridTemplateRows: 'auto auto 1fr' }}>
             <JournalSelector fragment={data.user} onSelect={onJournalSelected} />
-            <EntriesFeedFilters onSearchChange={() => { }} />
-            <EntriesFeed fragment={data.user} />
+            <EntriesFeedFilters onSearchSubmit={setSearchTerm} />
+            <Suspense fallback={<div>Loading...</div>}>
+                <EntriesFeed fragment={data.user} />
+            </Suspense>
         </div>
     );
 };

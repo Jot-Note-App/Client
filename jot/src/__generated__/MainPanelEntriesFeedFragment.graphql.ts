@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<5f780bbd9ea8da022506493cb2996a6d>>
+ * @generated SignedSource<<d341d94ce1ec3a797fe9474ae0320887>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -21,6 +21,10 @@ export type MainPanelEntriesFeedFragment$data = {
               readonly " $fragmentSpreads": FragmentRefs<"MainPanelEntryRowFragment">;
             };
           }>;
+          readonly pageInfo: {
+            readonly endCursor: string | null | undefined;
+            readonly hasNextPage: boolean;
+          };
         } | null | undefined;
         readonly id: string;
         readonly name: string;
@@ -44,9 +48,29 @@ var v0 = {
   "storageKey": null
 };
 return {
-  "argumentDefinitions": [],
+  "argumentDefinitions": [
+    {
+      "defaultValue": null,
+      "kind": "LocalArgument",
+      "name": "after"
+    },
+    {
+      "defaultValue": null,
+      "kind": "LocalArgument",
+      "name": "id"
+    }
+  ],
   "kind": "Fragment",
-  "metadata": null,
+  "metadata": {
+    "connection": [
+      {
+        "count": null,
+        "cursor": "after",
+        "direction": "forward",
+        "path": null
+      }
+    ]
+  },
   "name": "MainPanelEntriesFeedFragment",
   "selections": [
     (v0/*: any*/),
@@ -57,6 +81,11 @@ return {
           "kind": "Literal",
           "name": "first",
           "value": 1
+        },
+        {
+          "kind": "Variable",
+          "name": "id",
+          "variableName": "id"
         }
       ],
       "concreteType": "JournalConnection",
@@ -89,13 +118,38 @@ return {
                   "storageKey": null
                 },
                 {
-                  "alias": null,
+                  "alias": "entries",
                   "args": null,
                   "concreteType": "EntryConnection",
                   "kind": "LinkedField",
-                  "name": "entries",
+                  "name": "__MainPanelEntriesFeedFragment_entries_connection",
                   "plural": false,
                   "selections": [
+                    {
+                      "alias": null,
+                      "args": null,
+                      "concreteType": "PageInfo",
+                      "kind": "LinkedField",
+                      "name": "pageInfo",
+                      "plural": false,
+                      "selections": [
+                        {
+                          "alias": null,
+                          "args": null,
+                          "kind": "ScalarField",
+                          "name": "hasNextPage",
+                          "storageKey": null
+                        },
+                        {
+                          "alias": null,
+                          "args": null,
+                          "kind": "ScalarField",
+                          "name": "endCursor",
+                          "storageKey": null
+                        }
+                      ],
+                      "storageKey": null
+                    },
                     {
                       "alias": null,
                       "args": null,
@@ -117,8 +171,22 @@ return {
                               "args": null,
                               "kind": "FragmentSpread",
                               "name": "MainPanelEntryRowFragment"
+                            },
+                            {
+                              "alias": null,
+                              "args": null,
+                              "kind": "ScalarField",
+                              "name": "__typename",
+                              "storageKey": null
                             }
                           ],
+                          "storageKey": null
+                        },
+                        {
+                          "alias": null,
+                          "args": null,
+                          "kind": "ScalarField",
+                          "name": "cursor",
                           "storageKey": null
                         }
                       ],
@@ -134,7 +202,7 @@ return {
           "storageKey": null
         }
       ],
-      "storageKey": "journals(first:1)"
+      "storageKey": null
     }
   ],
   "type": "User",
@@ -142,6 +210,6 @@ return {
 };
 })();
 
-(node as any).hash = "0a5f3e30529937381f57416f5c9f8aef";
+(node as any).hash = "c9840e230df710fbe8ab7efe56f17eec";
 
 export default node;

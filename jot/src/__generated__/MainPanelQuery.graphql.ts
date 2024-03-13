@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<d9ff0def50857c808ee270a84b399bde>>
+ * @generated SignedSource<<00cb30aea12e7fe36247be2a86b93e6d>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -10,7 +10,10 @@
 
 import { ConcreteRequest, Query } from 'relay-runtime';
 import { FragmentRefs } from "relay-runtime";
-export type MainPanelQuery$variables = Record<PropertyKey, never>;
+export type MainPanelQuery$variables = {
+  after?: string | null | undefined;
+  journalId?: string | null | undefined;
+};
 export type MainPanelQuery$data = {
   readonly user: {
     readonly id: string;
@@ -23,23 +26,53 @@ export type MainPanelQuery = {
 };
 
 const node: ConcreteRequest = (function(){
-var v0 = {
+var v0 = [
+  {
+    "defaultValue": null,
+    "kind": "LocalArgument",
+    "name": "after"
+  },
+  {
+    "defaultValue": null,
+    "kind": "LocalArgument",
+    "name": "journalId"
+  }
+],
+v1 = {
   "alias": null,
   "args": null,
   "kind": "ScalarField",
   "name": "id",
   "storageKey": null
 },
-v1 = {
+v2 = {
+  "kind": "Variable",
+  "name": "after",
+  "variableName": "after"
+},
+v3 = {
+  "kind": "Variable",
+  "name": "id",
+  "variableName": "journalId"
+},
+v4 = {
   "alias": null,
   "args": null,
   "kind": "ScalarField",
   "name": "name",
   "storageKey": null
-};
+},
+v5 = [
+  (v2/*: any*/),
+  {
+    "kind": "Literal",
+    "name": "first",
+    "value": 10
+  }
+];
 return {
   "fragment": {
-    "argumentDefinitions": [],
+    "argumentDefinitions": (v0/*: any*/),
     "kind": "Fragment",
     "metadata": null,
     "name": "MainPanelQuery",
@@ -52,14 +85,17 @@ return {
         "name": "user",
         "plural": false,
         "selections": [
-          (v0/*: any*/),
+          (v1/*: any*/),
           {
             "args": null,
             "kind": "FragmentSpread",
             "name": "MainPanelJournalSelectorFragment"
           },
           {
-            "args": null,
+            "args": [
+              (v2/*: any*/),
+              (v3/*: any*/)
+            ],
             "kind": "FragmentSpread",
             "name": "MainPanelEntriesFeedFragment"
           }
@@ -72,7 +108,7 @@ return {
   },
   "kind": "Request",
   "operation": {
-    "argumentDefinitions": [],
+    "argumentDefinitions": (v0/*: any*/),
     "kind": "Operation",
     "name": "MainPanelQuery",
     "selections": [
@@ -84,7 +120,7 @@ return {
         "name": "user",
         "plural": false,
         "selections": [
-          (v0/*: any*/),
+          (v1/*: any*/),
           {
             "alias": "journalSelectorJournals",
             "args": [
@@ -115,8 +151,8 @@ return {
                     "name": "node",
                     "plural": false,
                     "selections": [
-                      (v0/*: any*/),
-                      (v1/*: any*/)
+                      (v1/*: any*/),
+                      (v4/*: any*/)
                     ],
                     "storageKey": null
                   }
@@ -133,7 +169,8 @@ return {
                 "kind": "Literal",
                 "name": "first",
                 "value": 1
-              }
+              },
+              (v3/*: any*/)
             ],
             "concreteType": "JournalConnection",
             "kind": "LinkedField",
@@ -156,16 +193,41 @@ return {
                     "name": "node",
                     "plural": false,
                     "selections": [
-                      (v0/*: any*/),
                       (v1/*: any*/),
+                      (v4/*: any*/),
                       {
                         "alias": null,
-                        "args": null,
+                        "args": (v5/*: any*/),
                         "concreteType": "EntryConnection",
                         "kind": "LinkedField",
                         "name": "entries",
                         "plural": false,
                         "selections": [
+                          {
+                            "alias": null,
+                            "args": null,
+                            "concreteType": "PageInfo",
+                            "kind": "LinkedField",
+                            "name": "pageInfo",
+                            "plural": false,
+                            "selections": [
+                              {
+                                "alias": null,
+                                "args": null,
+                                "kind": "ScalarField",
+                                "name": "hasNextPage",
+                                "storageKey": null
+                              },
+                              {
+                                "alias": null,
+                                "args": null,
+                                "kind": "ScalarField",
+                                "name": "endCursor",
+                                "storageKey": null
+                              }
+                            ],
+                            "storageKey": null
+                          },
                           {
                             "alias": null,
                             "args": null,
@@ -182,7 +244,7 @@ return {
                                 "name": "node",
                                 "plural": false,
                                 "selections": [
-                                  (v0/*: any*/),
+                                  (v1/*: any*/),
                                   {
                                     "alias": null,
                                     "args": null,
@@ -203,8 +265,22 @@ return {
                                     "kind": "ScalarField",
                                     "name": "content",
                                     "storageKey": null
+                                  },
+                                  {
+                                    "alias": null,
+                                    "args": null,
+                                    "kind": "ScalarField",
+                                    "name": "__typename",
+                                    "storageKey": null
                                   }
                                 ],
+                                "storageKey": null
+                              },
+                              {
+                                "alias": null,
+                                "args": null,
+                                "kind": "ScalarField",
+                                "name": "cursor",
                                 "storageKey": null
                               }
                             ],
@@ -212,6 +288,15 @@ return {
                           }
                         ],
                         "storageKey": null
+                      },
+                      {
+                        "alias": null,
+                        "args": (v5/*: any*/),
+                        "filters": null,
+                        "handle": "connection",
+                        "key": "MainPanelEntriesFeedFragment_entries",
+                        "kind": "LinkedHandle",
+                        "name": "entries"
                       }
                     ],
                     "storageKey": null
@@ -220,7 +305,7 @@ return {
                 "storageKey": null
               }
             ],
-            "storageKey": "journals(first:1)"
+            "storageKey": null
           }
         ],
         "storageKey": null
@@ -228,16 +313,16 @@ return {
     ]
   },
   "params": {
-    "cacheID": "30f339c209f3e7a52c80c6d72d2d0e52",
+    "cacheID": "5e8f17a87e11a984042c475e9eb4bc2d",
     "id": null,
     "metadata": {},
     "name": "MainPanelQuery",
     "operationKind": "query",
-    "text": "query MainPanelQuery {\n  user {\n    id\n    ...MainPanelJournalSelectorFragment\n    ...MainPanelEntriesFeedFragment\n  }\n}\n\nfragment MainPanelEntriesFeedFragment on User {\n  id\n  entriesFeedJournals: journals(first: 1) {\n    edges {\n      node {\n        id\n        name\n        entries {\n          edges {\n            node {\n              id\n              ...MainPanelEntryRowFragment\n            }\n          }\n        }\n      }\n    }\n  }\n}\n\nfragment MainPanelEntryRowFragment on Entry {\n  id\n  title\n  createdAt\n  content\n}\n\nfragment MainPanelJournalSelectorFragment on User {\n  id\n  journalSelectorJournals: journals(first: 100) {\n    edges {\n      node {\n        id\n        name\n      }\n    }\n  }\n}\n"
+    "text": "query MainPanelQuery(\n  $after: ID\n  $journalId: ID\n) {\n  user {\n    id\n    ...MainPanelJournalSelectorFragment\n    ...MainPanelEntriesFeedFragment_1BEdu5\n  }\n}\n\nfragment MainPanelEntriesFeedFragment_1BEdu5 on User {\n  id\n  entriesFeedJournals: journals(first: 1, id: $journalId) {\n    edges {\n      node {\n        id\n        name\n        entries(first: 10, after: $after) {\n          pageInfo {\n            hasNextPage\n            endCursor\n          }\n          edges {\n            node {\n              id\n              ...MainPanelEntryRowFragment\n              __typename\n            }\n            cursor\n          }\n        }\n      }\n    }\n  }\n}\n\nfragment MainPanelEntryRowFragment on Entry {\n  id\n  title\n  createdAt\n  content\n}\n\nfragment MainPanelJournalSelectorFragment on User {\n  id\n  journalSelectorJournals: journals(first: 100) {\n    edges {\n      node {\n        id\n        name\n      }\n    }\n  }\n}\n"
   }
 };
 })();
 
-(node as any).hash = "616a21472403cbb09d45152d57c7e43f";
+(node as any).hash = "e84f9323ac4bf7d980cd20639348ce67";
 
 export default node;
