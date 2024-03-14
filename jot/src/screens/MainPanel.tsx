@@ -181,7 +181,7 @@ const entriesFeedFragment = graphql`
             node {
                 id
                 name
-                entries(first:10, after: $after)@connection(key: "MainPanelEntriesFeedFragment_entries"){
+                entries(first:20, after: $after)@connection(key: "MainPanelEntriesFeedFragment_entries"){
                     pageInfo {
                         hasNextPage
                         endCursor

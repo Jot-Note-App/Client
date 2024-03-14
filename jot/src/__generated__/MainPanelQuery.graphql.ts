@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<00cb30aea12e7fe36247be2a86b93e6d>>
+ * @generated SignedSource<<af8c3f78fefa0cfc3d1c74b2db37e120>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -67,7 +67,7 @@ v5 = [
   {
     "kind": "Literal",
     "name": "first",
-    "value": 10
+    "value": 20
   }
 ];
 return {
@@ -313,12 +313,12 @@ return {
     ]
   },
   "params": {
-    "cacheID": "5e8f17a87e11a984042c475e9eb4bc2d",
+    "cacheID": "d5064d939c5aa97e5a21cb5c318f4ecd",
     "id": null,
     "metadata": {},
     "name": "MainPanelQuery",
     "operationKind": "query",
-    "text": "query MainPanelQuery(\n  $after: ID\n  $journalId: ID\n) {\n  user {\n    id\n    ...MainPanelJournalSelectorFragment\n    ...MainPanelEntriesFeedFragment_1BEdu5\n  }\n}\n\nfragment MainPanelEntriesFeedFragment_1BEdu5 on User {\n  id\n  entriesFeedJournals: journals(first: 1, id: $journalId) {\n    edges {\n      node {\n        id\n        name\n        entries(first: 10, after: $after) {\n          pageInfo {\n            hasNextPage\n            endCursor\n          }\n          edges {\n            node {\n              id\n              ...MainPanelEntryRowFragment\n              __typename\n            }\n            cursor\n          }\n        }\n      }\n    }\n  }\n}\n\nfragment MainPanelEntryRowFragment on Entry {\n  id\n  title\n  createdAt\n  content\n}\n\nfragment MainPanelJournalSelectorFragment on User {\n  id\n  journalSelectorJournals: journals(first: 100) {\n    edges {\n      node {\n        id\n        name\n      }\n    }\n  }\n}\n"
+    "text": "query MainPanelQuery(\n  $after: ID\n  $journalId: ID\n) {\n  user {\n    id\n    ...MainPanelJournalSelectorFragment\n    ...MainPanelEntriesFeedFragment_1BEdu5\n  }\n}\n\nfragment MainPanelEntriesFeedFragment_1BEdu5 on User {\n  id\n  entriesFeedJournals: journals(first: 1, id: $journalId) {\n    edges {\n      node {\n        id\n        name\n        entries(first: 20, after: $after) {\n          pageInfo {\n            hasNextPage\n            endCursor\n          }\n          edges {\n            node {\n              id\n              ...MainPanelEntryRowFragment\n              __typename\n            }\n            cursor\n          }\n        }\n      }\n    }\n  }\n}\n\nfragment MainPanelEntryRowFragment on Entry {\n  id\n  title\n  createdAt\n  content\n}\n\nfragment MainPanelJournalSelectorFragment on User {\n  id\n  journalSelectorJournals: journals(first: 100) {\n    edges {\n      node {\n        id\n        name\n      }\n    }\n  }\n}\n"
   }
 };
 })();
