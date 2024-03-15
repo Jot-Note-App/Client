@@ -118,7 +118,7 @@ type User {
   firstName: String!
   lastName: String!
   email: String!
-  journals(first: Int = 20, after: ID): JournalConnection
+  journals(first: Int = 20, after: ID, id: ID): JournalConnection
   templates(first: Int = 20, after: ID): JournalTemplateConnection
   lastUpdatedEntry: Entry
   createdAt: Time!

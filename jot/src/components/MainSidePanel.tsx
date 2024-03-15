@@ -91,7 +91,6 @@ interface MainSidePanelProps {
 }
 
 const MainSidePanel: React.FC<MainSidePanelProps> = ({ onLogoutCallback, selectedTab, setSelectedTab }) => {
-    console.log(selectedTab)
     const data = useLazyLoadQuery(
         mainSidePanelQuery,
         {},

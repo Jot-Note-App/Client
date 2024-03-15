@@ -15,7 +15,6 @@ const Search: React.FC<SearchProps> = ({ onSearchChange, onSubmit }) => {
     const handleSubmit = (event: React.FormEvent) => {
         event.preventDefault();
         onSubmit && onSubmit(searchValue);
-        console.log(`User submitted the search: ${searchValue}`);
     };
 
     return (
