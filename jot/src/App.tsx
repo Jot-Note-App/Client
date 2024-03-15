@@ -18,7 +18,6 @@ function App() {
     IsLoggedInQuery,
     {},
   );
-  console.log(data)
   //TODO: Check if user is already logged in by validating auth cookie and set state accordingly
   const [isLoggedIn, setIsLoggedIn] = useState(data.isLoggedIn);
   const onSuccessfulLogin = () => {

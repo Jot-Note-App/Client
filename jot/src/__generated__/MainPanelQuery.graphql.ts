@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<af8c3f78fefa0cfc3d1c74b2db37e120>>
+ * @generated SignedSource<<ed0ed095b1a04c5b1b8416986f5db67c>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -13,6 +13,7 @@ import { FragmentRefs } from "relay-runtime";
 export type MainPanelQuery$variables = {
   after?: string | null | undefined;
   journalId?: string | null | undefined;
+  search?: string | null | undefined;
 };
 export type MainPanelQuery$data = {
   readonly user: {
@@ -36,6 +37,11 @@ var v0 = [
     "defaultValue": null,
     "kind": "LocalArgument",
     "name": "journalId"
+  },
+  {
+    "defaultValue": null,
+    "kind": "LocalArgument",
+    "name": "search"
   }
 ],
 v1 = {
@@ -56,19 +62,25 @@ v3 = {
   "variableName": "journalId"
 },
 v4 = {
+  "kind": "Variable",
+  "name": "search",
+  "variableName": "search"
+},
+v5 = {
   "alias": null,
   "args": null,
   "kind": "ScalarField",
   "name": "name",
   "storageKey": null
 },
-v5 = [
+v6 = [
   (v2/*: any*/),
   {
     "kind": "Literal",
     "name": "first",
     "value": 20
-  }
+  },
+  (v4/*: any*/)
 ];
 return {
   "fragment": {
@@ -94,7 +106,8 @@ return {
           {
             "args": [
               (v2/*: any*/),
-              (v3/*: any*/)
+              (v3/*: any*/),
+              (v4/*: any*/)
             ],
             "kind": "FragmentSpread",
             "name": "MainPanelEntriesFeedFragment"
@@ -152,7 +165,7 @@ return {
                     "plural": false,
                     "selections": [
                       (v1/*: any*/),
-                      (v4/*: any*/)
+                      (v5/*: any*/)
                     ],
                     "storageKey": null
                   }
@@ -194,10 +207,10 @@ return {
                     "plural": false,
                     "selections": [
                       (v1/*: any*/),
-                      (v4/*: any*/),
+                      (v5/*: any*/),
                       {
                         "alias": null,
-                        "args": (v5/*: any*/),
+                        "args": (v6/*: any*/),
                         "concreteType": "EntryConnection",
                         "kind": "LinkedField",
                         "name": "entries",
@@ -291,8 +304,10 @@ return {
                       },
                       {
                         "alias": null,
-                        "args": (v5/*: any*/),
-                        "filters": null,
+                        "args": (v6/*: any*/),
+                        "filters": [
+                          "search"
+                        ],
                         "handle": "connection",
                         "key": "MainPanelEntriesFeedFragment_entries",
                         "kind": "LinkedHandle",
@@ -313,16 +328,16 @@ return {
     ]
   },
   "params": {
-    "cacheID": "d5064d939c5aa97e5a21cb5c318f4ecd",
+    "cacheID": "4eb3eaa2f6c8f04ce2e37e8bce838b2c",
     "id": null,
     "metadata": {},
     "name": "MainPanelQuery",
     "operationKind": "query",
-    "text": "query MainPanelQuery(\n  $after: ID\n  $journalId: ID\n) {\n  user {\n    id\n    ...MainPanelJournalSelectorFragment\n    ...MainPanelEntriesFeedFragment_1BEdu5\n  }\n}\n\nfragment MainPanelEntriesFeedFragment_1BEdu5 on User {\n  id\n  entriesFeedJournals: journals(first: 1, id: $journalId) {\n    edges {\n      node {\n        id\n        name\n        entries(first: 20, after: $after) {\n          pageInfo {\n            hasNextPage\n            endCursor\n          }\n          edges {\n            node {\n              id\n              ...MainPanelEntryRowFragment\n              __typename\n            }\n            cursor\n          }\n        }\n      }\n    }\n  }\n}\n\nfragment MainPanelEntryRowFragment on Entry {\n  id\n  title\n  createdAt\n  content\n}\n\nfragment MainPanelJournalSelectorFragment on User {\n  id\n  journalSelectorJournals: journals(first: 100) {\n    edges {\n      node {\n        id\n        name\n      }\n    }\n  }\n}\n"
+    "text": "query MainPanelQuery(\n  $after: ID\n  $journalId: ID\n  $search: String\n) {\n  user {\n    id\n    ...MainPanelJournalSelectorFragment\n    ...MainPanelEntriesFeedFragment_2TEHac\n  }\n}\n\nfragment MainPanelEntriesFeedFragment_2TEHac on User {\n  id\n  entriesFeedJournals: journals(first: 1, id: $journalId) {\n    edges {\n      node {\n        id\n        name\n        entries(first: 20, after: $after, search: $search) {\n          pageInfo {\n            hasNextPage\n            endCursor\n          }\n          edges {\n            node {\n              id\n              ...MainPanelEntryRowFragment\n              __typename\n            }\n            cursor\n          }\n        }\n      }\n    }\n  }\n}\n\nfragment MainPanelEntryRowFragment on Entry {\n  id\n  title\n  createdAt\n  content\n}\n\nfragment MainPanelJournalSelectorFragment on User {\n  id\n  journalSelectorJournals: journals(first: 100) {\n    edges {\n      node {\n        id\n        name\n      }\n    }\n  }\n}\n"
   }
 };
 })();
 
-(node as any).hash = "e84f9323ac4bf7d980cd20639348ce67";
+(node as any).hash = "2d4aadaba9b74252fe778fef069b539e";
 
 export default node;

@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<dc74b07f2788dc0ee8ba434f237628f8>>
+ * @generated SignedSource<<022309512e051fb8adcb64b35d05549c>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -58,6 +58,11 @@ return {
       "defaultValue": null,
       "kind": "LocalArgument",
       "name": "id"
+    },
+    {
+      "defaultValue": null,
+      "kind": "LocalArgument",
+      "name": "search"
     }
   ],
   "kind": "Fragment",
@@ -119,7 +124,13 @@ return {
                 },
                 {
                   "alias": "entries",
-                  "args": null,
+                  "args": [
+                    {
+                      "kind": "Variable",
+                      "name": "search",
+                      "variableName": "search"
+                    }
+                  ],
                   "concreteType": "EntryConnection",
                   "kind": "LinkedField",
                   "name": "__MainPanelEntriesFeedFragment_entries_connection",
@@ -210,6 +221,6 @@ return {
 };
 })();
 
-(node as any).hash = "a967cb5483aa210aefc7ae053bd9d5b0";
+(node as any).hash = "3b3c44571b7d2361ce5e05557794f91d";
 
 export default node;

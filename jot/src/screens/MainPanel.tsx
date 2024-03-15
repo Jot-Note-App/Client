@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react';
 import { MainPanelTab } from '../enums/MainPanelTab';
 import { graphql, PayloadError, FragmentRef } from 'relay-runtime';
-import { useFragment, useLazyLoadQuery } from 'react-relay';
+import { loadQuery, useFragment, useLazyLoadQuery } from 'react-relay';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useFloating, useInteractions, FloatingList, useListNavigation, useTypeahead, useClick, useDismiss, useRole } from '@floating-ui/react';
 import { MainPanelQuery$data } from '../__generated__/MainPanelQuery.graphql';
@@ -62,7 +62,6 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect })
     useEffect(() => {
         const storedLastJournalId = localStorage.getItem(lastJournalKey);
         if (storedLastJournalId) {
-            console.log("Found last journal id: " + storedLastJournalId)
             setSelectedId(storedLastJournalId);
             const selectedJournal = data.journalSelectorJournals?.edges.find((edge) => edge.node.id == storedLastJournalId)
             setSelectedLabel(selectedJournal?.node.name || 'Journals');
@@ -70,7 +69,6 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect })
     }, []);
     useEffect(() => {
         if (selectedId) {
-            console.log("storing new journal id: " + selectedId)
             localStorage.setItem(lastJournalKey, selectedId)
         }
     }, [selectedId])
@@ -174,6 +172,7 @@ const entriesFeedFragment = graphql`
   fragment MainPanelEntriesFeedFragment on User @argumentDefinitions(
     id: {type: "ID", defaultValue: null}
     after: { type: "ID", defaultValue: null }
+    search: { type: "String", defaultValue: null }
   ) {
     id
     entriesFeedJournals: journals(first: 1, id: $id){
@@ -181,7 +180,7 @@ const entriesFeedFragment = graphql`
             node {
                 id
                 name
-                entries(first:20, after: $after)@connection(key: "MainPanelEntriesFeedFragment_entries"){
+                entries(first:20, after: $after, search: $search)@connection(key: "MainPanelEntriesFeedFragment_entries"){
                     pageInfo {
                         hasNextPage
                         endCursor
@@ -220,29 +219,37 @@ const EntriesFeed: React.FC<EntriesFeedProps> = ({ fragment }) => {
 }
 
 const mainPanelQuery = graphql`
-query MainPanelQuery($after: ID, $journalId: ID){
+query MainPanelQuery($after: ID, $journalId: ID, $search: String){
   user {
     id
     ...MainPanelJournalSelectorFragment
-    ...MainPanelEntriesFeedFragment @arguments(after: $after, id: $journalId)
+    ...MainPanelEntriesFeedFragment @arguments(after: $after, id: $journalId, search: $search)
   }
 }`;
 
 const MainPanel: React.FC<MainPanelProps> = ({ selectedTab }) => {
     const [currJournalId, setCurrJournalId] = useState<string | null>(null)
     const [searchTerm, setSearchTerm] = useState<string | null>(null)
-    const data = useLazyLoadQuery(mainPanelQuery, { after: null, journalId: currJournalId }) as MainPanelQuery$data;
+    const data = useLazyLoadQuery(mainPanelQuery, { after: null, journalId: currJournalId, search: searchTerm }) as MainPanelQuery$data;
 
     function onJournalSelected(journalId: string) {
+        setSearchTerm(null)
         setCurrJournalId(journalId);
     }
 
+    function onSearchSubmit(search: string) {
+        if (search == '') {
+            setSearchTerm(null)
+        } else {
+            setSearchTerm(search)
+        }
+    }
 
 
     return (
         <div className="h-screen grid grid-flow-row w-80 border-x border-mediumGray" style={{ gridTemplateRows: 'auto auto 1fr' }}>
             <JournalSelector fragment={data.user} onSelect={onJournalSelected} />
-            <EntriesFeedFilters onSearchSubmit={setSearchTerm} />
+            <EntriesFeedFilters onSearchSubmit={onSearchSubmit} />
             <Suspense fallback={<div>Loading...</div>}>
                 <EntriesFeed fragment={data.user} />
             </Suspense>
