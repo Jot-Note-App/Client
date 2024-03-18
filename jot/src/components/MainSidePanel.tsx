@@ -1,88 +1,32 @@
-import React, { useState } from 'react';
-import { graphql, PayloadError, FragmentRef } from 'relay-runtime';
-import { useFragment, useLazyLoadQuery } from 'react-relay';
-import { MainSidePanelUserProfileInfoFragment$data, MainSidePanelUserProfileInfoFragment$key } from '../__generated__/MainSidePanelUserProfileInfoFragment.graphql'
+import React, { useContext, useState } from 'react';
 import ProfileAvatar from './ProfileAvatar';
-import { MainSidePanelQuery$data } from '../__generated__/MainSidePanelQuery.graphql';
-import ArrowCircleIcon from '../icons/ArrowCircleIcon';
 import BookIcon from '../icons/BookIcon';
 import GoogleLogout from './GoogleLogout';
 import LogoutIcon from '../icons/LogoutIcon';
 import { MainPanelTab } from '../enums/MainPanelTab';
+import { UserContext } from './UserContextProvider';
 interface UserProfileInfoProps {
-    fragment: MainSidePanelUserProfileInfoFragment$key;
     hideDetails?: boolean;
 }
 
-const userProfileInfoFragment = graphql`
-  fragment MainSidePanelUserProfileInfoFragment on User {
-    id
-    email
-    firstName
-    lastName
-  }
-`;
-
-const UserProfileInfo: React.FC<UserProfileInfoProps> = ({ fragment, hideDetails = false }) => {
-    const data = useFragment(
-        userProfileInfoFragment,
-        fragment,
-    ) as MainSidePanelUserProfileInfoFragment$data;
-    const firstName = data.firstName.charAt(0).toUpperCase() + data.firstName.slice(1)
-    const lastName = data.firstName.charAt(0).toUpperCase() + data.lastName.slice(1)
+const UserProfileInfo: React.FC<UserProfileInfoProps> = ({ hideDetails = false }) => {
+    const userContext = useContext(UserContext)
+    const firstName = userContext.firstName.charAt(0).toUpperCase() + userContext.firstName.slice(1)
+    const lastName = userContext.firstName.charAt(0).toUpperCase() + userContext.lastName.slice(1)
     return (
 
         <div className="flex items-center justify-center gap-2">
-            <ProfileAvatar firstName={data.firstName} lastName={data.lastName} />
+            <ProfileAvatar firstName={firstName} lastName={lastName} />
             {!hideDetails &&
                 <div className="text-white">
                     <div className="">{firstName + " " + lastName}</div>
-                    <div className="text-sm">{data.email}</div>
+                    <div className="text-sm">{userContext.email}</div>
                 </div>}
 
         </div>
 
     );
 };
-
-// interface MainSidePanelJournalItems {
-//     fragment: MainSidePanelUserProfileInfoFragment$key;
-// }
-
-// const userProfileInfoFragment = graphql`
-//   fragment MainSidePanelUserProfileInfoFragment on User {
-//     id
-//     email
-//     firstName
-//     lastName
-//   }
-// `;
-
-const MainSidePanelJournalItems: React.FC = () => {
-
-    return (
-
-        <div className="flex gap-2 text-white items-center">
-            <BookIcon />
-            <div >
-                Journals
-            </div>
-        </div>
-
-    );
-};
-
-
-
-
-const mainSidePanelQuery = graphql`
-query MainSidePanelQuery {
-  user {
-    id
-    ...MainSidePanelUserProfileInfoFragment
-  }
-}
-`
 
 interface MainSidePanelProps {
     onLogoutCallback?: () => void;
@@ -91,15 +35,11 @@ interface MainSidePanelProps {
 }
 
 const MainSidePanel: React.FC<MainSidePanelProps> = ({ onLogoutCallback, selectedTab, setSelectedTab }) => {
-    const data = useLazyLoadQuery(
-        mainSidePanelQuery,
-        {},
-    ) as MainSidePanelQuery$data;
     return (
         <div className=" bg-main min-h-screen px-4 py-6 grid grid-flow-row content-between justify-items-center">
             <div>
                 <div className="justify-center">
-                    <UserProfileInfo fragment={data.user} hideDetails={true} />
+                    <UserProfileInfo hideDetails={true} />
                 </div>
                 <div className="mt-4">
                     <div className={"bg-mainDark rounded p-4 hover:cursor-pointer text-secondary"}>
