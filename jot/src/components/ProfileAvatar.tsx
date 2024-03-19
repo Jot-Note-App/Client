@@ -1,7 +1,4 @@
 import React from 'react';
-import { graphql, PayloadError } from 'relay-runtime';
-import { useMutation } from 'react-relay';
-import { GoogleLogoutLogoutMutation$data } from '../__generated__/GoogleLogoutLogoutMutation.graphql'
 
 interface ProfileAvatarProps {
     firstName: string,

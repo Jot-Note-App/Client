@@ -6,10 +6,17 @@ import SplashScreen from './screens/SplashScreen';
 import { graphql } from 'relay-runtime';
 import { useLazyLoadQuery } from "react-relay";
 import { AppIsLoggedInQuery } from './__generated__/AppIsLoggedInQuery.graphql'
+import { UserContextProvider } from './components/UserContextProvider';
 
 const IsLoggedInQuery = graphql`
   query AppIsLoggedInQuery {
     isLoggedIn
+    user {
+      id
+      firstName
+      lastName
+      email
+    }
   }
 `;
 
@@ -27,11 +34,19 @@ function App() {
   const onSuccessfulLogout = () => {
     setIsLoggedIn(false)
   }
-
+  const userContext = {
+    id: data.user.id,
+    firstName: data.user.firstName,
+    lastName: data.user.lastName,
+    email: data.user.email
+  }
   return (
     <div>
       {
-        isLoggedIn ? <MainScreen onLogoutCallback={onSuccessfulLogout} /> : <SplashScreen onLoginCallback={onSuccessfulLogin} />
+        isLoggedIn ? <UserContextProvider user={userContext}>
+          <MainScreen onLogoutCallback={onSuccessfulLogout} />
+        </UserContextProvider> :
+          <SplashScreen onLoginCallback={onSuccessfulLogin} />
       }
     </div>
   )

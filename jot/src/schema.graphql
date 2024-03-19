@@ -3,6 +3,9 @@ schema {
   mutation: Mutation
 }
 scalar Time
+type CreateJournalMutationSuccess {
+  journalEdge: JournalEdge!
+}
 type CreateUserSuccess {
   user: User!
 }
@@ -87,7 +90,7 @@ type Mutation {
   createUser(input: CreateUserInput!): CreateUserResponse!
   updateUser(id: ID!, input: UpdateUserInput!): UpdateUserResponse!
   deleteUser(id: ID!): DeleteUserResponse!
-  createJournal(input: CreateJournalInput!): JournalMutationResponse!
+  createJournal(input: CreateJournalInput!): CreateJournalMutationResponse!
   updateJournal(id: ID!, input: UpdateJournalInput!): JournalMutationResponse!
   deleteJournal(id: ID!): DeleteMutationResponse!
   createEntry(input: CreateEntryInput!): EntryMutationResponse!
@@ -127,6 +130,7 @@ type User {
 interface Node {
   id: ID!
 }
+union CreateJournalMutationResponse = CreateJournalMutationSuccess | MutationFailure
 union CreateUserResponse = CreateUserSuccess | MutationFailure
 union DeleteMutationResponse = DeleteMutationSuccess | MutationFailure
 union DeleteUserResponse = DeleteUserSuccess | MutationFailure

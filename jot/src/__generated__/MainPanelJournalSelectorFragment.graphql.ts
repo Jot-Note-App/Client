@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<184290a38d796a82211000ef6cb3c0fb>>
+ * @generated SignedSource<<bf55cd7f657b11d66a8479683c1e7d76>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -13,6 +13,7 @@ import { FragmentRefs } from "relay-runtime";
 export type MainPanelJournalSelectorFragment$data = {
   readonly id: string;
   readonly journalSelectorJournals: {
+    readonly __id: string;
     readonly edges: ReadonlyArray<{
       readonly node: {
         readonly id: string;
@@ -38,22 +39,27 @@ var v0 = {
 return {
   "argumentDefinitions": [],
   "kind": "Fragment",
-  "metadata": null,
+  "metadata": {
+    "connection": [
+      {
+        "count": null,
+        "cursor": null,
+        "direction": "forward",
+        "path": [
+          "journalSelectorJournals"
+        ]
+      }
+    ]
+  },
   "name": "MainPanelJournalSelectorFragment",
   "selections": [
     (v0/*: any*/),
     {
       "alias": "journalSelectorJournals",
-      "args": [
-        {
-          "kind": "Literal",
-          "name": "first",
-          "value": 100
-        }
-      ],
+      "args": null,
       "concreteType": "JournalConnection",
       "kind": "LinkedField",
-      "name": "journals",
+      "name": "__MainPanelJournalSelectorFragment_journalSelectorJournals_connection",
       "plural": false,
       "selections": [
         {
@@ -79,15 +85,66 @@ return {
                   "kind": "ScalarField",
                   "name": "name",
                   "storageKey": null
+                },
+                {
+                  "alias": null,
+                  "args": null,
+                  "kind": "ScalarField",
+                  "name": "__typename",
+                  "storageKey": null
                 }
               ],
+              "storageKey": null
+            },
+            {
+              "alias": null,
+              "args": null,
+              "kind": "ScalarField",
+              "name": "cursor",
               "storageKey": null
             }
           ],
           "storageKey": null
+        },
+        {
+          "alias": null,
+          "args": null,
+          "concreteType": "PageInfo",
+          "kind": "LinkedField",
+          "name": "pageInfo",
+          "plural": false,
+          "selections": [
+            {
+              "alias": null,
+              "args": null,
+              "kind": "ScalarField",
+              "name": "endCursor",
+              "storageKey": null
+            },
+            {
+              "alias": null,
+              "args": null,
+              "kind": "ScalarField",
+              "name": "hasNextPage",
+              "storageKey": null
+            }
+          ],
+          "storageKey": null
+        },
+        {
+          "kind": "ClientExtension",
+          "selections": [
+            {
+              "alias": null,
+              "args": null,
+              "kind": "ScalarField",
+              "name": "__id",
+              "storageKey": null
+            }
+          ]
         }
       ],
-      "storageKey": "journals(first:100)"
+      "storageKey": null
     }
   ],
   "type": "User",
@@ -95,6 +152,6 @@ return {
 };
 })();
 
-(node as any).hash = "88f27156d15dd92dc3c94f13317d8e92";
+(node as any).hash = "823014a759eb7ae9d8557880b5717231";
 
 export default node;
