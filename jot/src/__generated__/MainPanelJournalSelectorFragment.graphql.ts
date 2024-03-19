@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<ec46bb208e68f7f6e05f1829b0945ccd>>
+ * @generated SignedSource<<bf55cd7f657b11d66a8479683c1e7d76>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -13,6 +13,7 @@ import { FragmentRefs } from "relay-runtime";
 export type MainPanelJournalSelectorFragment$data = {
   readonly id: string;
   readonly journalSelectorJournals: {
+    readonly __id: string;
     readonly edges: ReadonlyArray<{
       readonly node: {
         readonly id: string;
@@ -129,6 +130,18 @@ return {
             }
           ],
           "storageKey": null
+        },
+        {
+          "kind": "ClientExtension",
+          "selections": [
+            {
+              "alias": null,
+              "args": null,
+              "kind": "ScalarField",
+              "name": "__id",
+              "storageKey": null
+            }
+          ]
         }
       ],
       "storageKey": null
@@ -139,6 +152,6 @@ return {
 };
 })();
 
-(node as any).hash = "b22a48e25696f4108d3d5507c3e99276";
+(node as any).hash = "823014a759eb7ae9d8557880b5717231";
 
 export default node;

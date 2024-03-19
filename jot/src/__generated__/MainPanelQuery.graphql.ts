@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<f1f549e529a6ab220964016c7ab41ff9>>
+ * @generated SignedSource<<a48f5b94111dc9642262a6752b70e994>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -215,6 +215,18 @@ return {
                   (v10/*: any*/)
                 ],
                 "storageKey": null
+              },
+              {
+                "kind": "ClientExtension",
+                "selections": [
+                  {
+                    "alias": null,
+                    "args": null,
+                    "kind": "ScalarField",
+                    "name": "__id",
+                    "storageKey": null
+                  }
+                ]
               }
             ],
             "storageKey": "journals(first:100)"

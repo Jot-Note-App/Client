@@ -18,13 +18,15 @@ interface MainPanelProps {
 }
 
 const mainPanelCreateJournalMutation = graphql`
-mutation MainPanelCreateJournalMutation($name: String!, $userId: ID!){
+mutation MainPanelCreateJournalMutation($name: String!, $userId: ID!, $connections: [ID!]!){
   createJournal(input: {name: $name, userId: $userId}){
     __typename
-    ... on JournalMutationSuccess {
-        journal {
-            id
-            name
+    ... on CreateJournalMutationSuccess {
+        journalEdge @prependEdge(connections: $connections){
+            node {
+                id
+                name
+            }
         }
     }
     ... on MutationFailure {
@@ -39,6 +41,7 @@ const journalSelectorFragment = graphql`
   fragment MainPanelJournalSelectorFragment on User {
     id
     journalSelectorJournals: journals(first: 100) @connection(key: "MainPanelJournalSelectorFragment_journalSelectorJournals"){
+        __id
         edges {
             node {
                 id
@@ -53,13 +56,16 @@ interface JournalSelectorRowProps {
     id: string;
     isSelected: boolean;
     label: string;
-    onSelect: (id: string) => void;
+    onSelect: (id: string, label: string) => void;
 }
 
 
 const JournalSelectorRow: React.FC<JournalSelectorRowProps> = ({ id, isSelected, label, onSelect }) => {
     return (
-        <div key={id} className={`w-full text-regular hover:bg-secondary hover:cursor-pointer p-2 ${isSelected ? 'bg-secondary' : ''}`} onClick={() => onSelect(id)}>
+        <div key={id} className={`w-full text-regular hover:bg-secondary hover:cursor-pointer p-2 ${isSelected ? 'bg-secondary' : ''}`}
+            onClick={() => {
+                onSelect(id, label)
+            }}>
             {label}
         </div>
     );
@@ -117,15 +123,19 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect })
         }
     }).filter(option => { return !searchTerm || searchTerm == '' || option.label.toLowerCase().includes(searchTerm.toLowerCase()) }) : [];
     const { getReferenceProps, getFloatingProps } = useInteractions([listNav, click, dismiss, role]);
-    const handleSelect = useCallback((id: string) => {
+    const handleSelect = useCallback((id: string, label: string) => {
         onSelect(id)
         setSelectedId(id)
-        setSelectedLabel(options.find((option) => option.id == id)?.label || '')
+        setSelectedLabel(label)
         setIsOpen(false)
     }, [])
-    const onLoginComplete = useCallback((response: {}, _errors: PayloadError[] | null) => {
+    const onCreateJournalComplete = useCallback((response: {}, _errors: PayloadError[] | null) => {
         const res = response as MainPanelCreateJournalMutation$data;
-        console.log(res)
+        if (res.createJournal.__typename == 'CreateJournalMutationSuccess') {
+            const newJournal = res.createJournal.journalEdge.node
+            handleSelect(newJournal.id, newJournal.name)
+        }
+
     }, []);
     return (
         <div className="w-full">
@@ -154,12 +164,14 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect })
                     </FloatingList>
                     <div className="text-regular text-center hover:cursor-pointer hover:bg-secondary py-3 border-t border-mediumGray"
                         onClick={() => {
+                            const connectionId = data.journalSelectorJournals?.__id
                             createJournal({
                                 variables: {
                                     name: 'Untitled Notebook',
                                     userId: userContext.id,
+                                    connections: connectionId ? [connectionId] : [],
                                 },
-                                onCompleted: onLoginComplete,
+                                onCompleted: onCreateJournalComplete,
                             })
                         }}
                     >
