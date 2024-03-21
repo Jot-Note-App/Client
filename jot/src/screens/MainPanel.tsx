@@ -1,6 +1,6 @@
 import React, { Suspense, useContext } from 'react';
 import { MainPanelTab } from '../enums/MainPanelTab';
-import { graphql, PayloadError, FragmentRef } from 'relay-runtime';
+import { graphql, PayloadError, FragmentRef, ConnectionHandler } from 'relay-runtime';
 import { loadQuery, useFragment, useLazyLoadQuery, useMutation } from 'react-relay';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useFloating, useInteractions, FloatingList, useListNavigation, useTypeahead, useClick, useDismiss, useRole } from '@floating-ui/react';
@@ -13,6 +13,8 @@ import { MainPanelEntryRowFragment$data, MainPanelEntryRowFragment$key } from '.
 import MagnifyingGlassIcon from '../icons/MagnifyingGlassIcon';
 import { UserContext } from '../components/UserContextProvider';
 import { MainPanelCreateJournalMutation$data } from '../__generated__/MainPanelCreateJournalMutation.graphql';
+import AddCircleIcon from '../icons/AddCircleIcon';
+import { MainPanelCreateEntryMutation, MainPanelCreateEntryMutation$data } from '../__generated__/MainPanelCreateEntryMutation.graphql';
 interface MainPanelProps {
     selectedTab: MainPanelTab;
 }
@@ -92,6 +94,7 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect })
         const storedLastJournalId = localStorage.getItem(lastJournalKey);
         if (storedLastJournalId) {
             setSelectedId(storedLastJournalId);
+            onSelect(storedLastJournalId);
             const selectedJournal = data.journalSelectorJournals?.edges.find((edge) => edge.node.id == storedLastJournalId)
             setSelectedLabel(selectedJournal?.node.name || 'Journals');
         }
@@ -183,13 +186,61 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect })
     );
 }
 
+const mainPanelCreateEntryMutation = graphql`
+mutation MainPanelCreateEntryMutation($content: String!, $journalId: ID!, $connections: [ID!]!){
+  createEntry(input: {content: $content, journalId: $journalId}){
+    __typename
+    ... on CreateEntryMutationSuccess {
+        entryEdge @prependEdge(connections: $connections){
+            node {
+                id
+                title
+                content
+                createdAt
+                updatedAt
+            }
+        }
+    }
+    ... on MutationFailure {
+        error
+    }
+  }
+}
+`
+
 interface EntriesFeedFiltersProps {
     onSearchSubmit: (search: string) => void;
+    onCreateEntry: (entryId: string) => void;
+    journalId: string | null;
 }
-const EntriesFeedFilters: React.FC<EntriesFeedFiltersProps> = ({ onSearchSubmit }) => {
+const EntriesFeedFilters: React.FC<EntriesFeedFiltersProps> = ({ onSearchSubmit, onCreateEntry, journalId }) => {
+    const [createEntry, _isCreatingEntry] = useMutation(mainPanelCreateEntryMutation);
+    const onCreateEntryComplete = useCallback((response: {}, _errors: PayloadError[] | null) => {
+        const res = response as MainPanelCreateEntryMutation$data;
+        if (res.createEntry.__typename == 'CreateEntryMutationSuccess') {
+            const newEntry = res.createEntry.entryEdge.node
+            onCreateEntry(newEntry.id)
+        }
+    }, [])
     return (
-        <div className="bg-faintGray border-b border-mediumGray p-6">
+        <div className="grid grid-flow-col items-center gap-2 bg-faintGray border-b border-mediumGray p-6 ">
             <Search onSubmit={onSearchSubmit} placeholder='Enter to search ...' />
+            <div className="text-darkGray hover:cursor-pointer hover:text-main "
+                onClick={() => {
+                    if (journalId) {
+                        const connectionId = ConnectionHandler.getConnectionID(journalId, 'MainPanelEntriesFeedFragment_entries')
+                        createEntry({
+                            variables: {
+                                content: '',
+                                journalId: journalId,
+                                connections: connectionId ? [connectionId] : [],
+                            },
+                            onCompleted: onCreateEntryComplete,
+                        })
+                    }
+                }}>
+                <AddCircleIcon />
+            </div>
         </div>
     );
 }
@@ -199,6 +250,7 @@ const entryRowFragment = graphql`
     id
     title
     createdAt
+    updatedAt
     content
   }
 `;
@@ -206,17 +258,17 @@ const entryRowFragment = graphql`
 interface EntryRowProps {
     fragment: MainPanelEntryRowFragment$key;
     onSelect: (id: string) => void;
-    isSelected: boolean;
+    selectedEntryId: string | null;
 }
 
-const EntryRow: React.FC<EntryRowProps> = ({ fragment, onSelect, isSelected }) => {
+const EntryRow: React.FC<EntryRowProps> = ({ fragment, onSelect, selectedEntryId }) => {
     const data = useFragment(
         entryRowFragment,
         fragment,
     ) as MainPanelEntryRowFragment$data;
 
     return (
-        <div className={`hover:bg-secondary hover:cursor-pointer w-full h-16 border-b border-mediumGray py-2 px-5 grid grid-flow-row items-center ${isSelected ? "bg-secondary" : "bg-white"}`}
+        <div className={`hover:bg-secondary hover:cursor-pointer w-full h-16 border-b border-mediumGray py-2 px-5 grid grid-flow-row items-center ${data.id == selectedEntryId ? "bg-secondary" : "bg-white"}`}
             style={{ gridTemplateRows: 'auto 1fr' }}
             onClick={() => onSelect(data.id)}
         >
@@ -264,35 +316,32 @@ const entriesFeedFragment = graphql`
 interface EntriesFeedProps {
     fragment: MainPanelEntriesFeedFragment$key;
     onSelectEntry: (id: string) => void;
+    selectedEntryId: string | null;
 }
 
-const EntriesFeed: React.FC<EntriesFeedProps> = ({ fragment, onSelectEntry }) => {
+const EntriesFeed: React.FC<EntriesFeedProps> = ({ fragment, onSelectEntry, selectedEntryId }) => {
     const data = useFragment(
         entriesFeedFragment,
         fragment,
     ) as MainPanelEntriesFeedFragment$data
+    if (!selectedEntryId) {
+        const entryId = data.entriesFeedJournals?.edges[0]?.node.entries?.edges[0]?.node.id
+        if (entryId) {
+            onSelectEntry(entryId)
+        }
+    }
     return (
         <div className="w-full bg-white overflow-auto">
             {data.entriesFeedJournals?.edges.map((edge) => {
                 return edge.node.entries?.edges.map((edge) => {
-                    return <EntryRow key={edge.node.id} fragment={edge.node} onSelect={onSelectEntry} isSelected={false} />
+                    const entry = edge.node
+                    return <EntryRow key={entry.id} fragment={entry} onSelect={onSelectEntry} selectedEntryId={selectedEntryId} />
                 })
             })}
         </div>
     );
 }
 
-const mainPanelJournalEditorQuery = graphql`
-query MainPanelJournalEditorQuery($entryId: ID!){
-  node(id: $entryId){
-    __typename
-    ... on Entry {
-        id
-        title
-        content
-    }
-  }
-}`;
 
 interface JournalEditorProps {
     entryId: string | null;
@@ -326,27 +375,31 @@ const MainPanel: React.FC<MainPanelProps> = ({ selectedTab }) => {
     const [searchTerm, setSearchTerm] = useState<string | null>(null)
     const data = useLazyLoadQuery(mainPanelQuery, { after: null, journalId: currJournalId, search: searchTerm }) as MainPanelQuery$data;
 
-    function onJournalSelected(journalId: string) {
+    const onJournalSelected = useCallback((journalId: string) => {
         setSearchTerm(null)
+        setCurrEntryId(null)
         setCurrJournalId(journalId);
-    }
+    }, [])
 
-    function onSearchSubmit(search: string) {
+    const onSearchSubmit = useCallback((search: string) => {
         if (search == '') {
             setSearchTerm(null)
         } else {
             setSearchTerm(search)
         }
-    }
+    }, [])
 
+    const onEntryCreated = useCallback((entryId: string) => {
+        setCurrEntryId(entryId)
+    }, [])
 
     return (
         <div className="w-full flex">
             <div className="h-screen grid grid-flow-row w-80 border-x border-mediumGray" style={{ gridTemplateRows: 'auto auto 1fr' }}>
                 <JournalSelector fragment={data.user} onSelect={onJournalSelected} />
-                <EntriesFeedFilters onSearchSubmit={onSearchSubmit} />
+                <EntriesFeedFilters onSearchSubmit={onSearchSubmit} onCreateEntry={onEntryCreated} journalId={currJournalId} />
                 <Suspense fallback={<div>Loading...</div>}>
-                    <EntriesFeed fragment={data.user} onSelectEntry={setCurrEntryId} />
+                    <EntriesFeed fragment={data.user} onSelectEntry={setCurrEntryId} selectedEntryId={currEntryId} />
                 </Suspense>
             </div>
             <JournalEditor entryId={currEntryId} />
