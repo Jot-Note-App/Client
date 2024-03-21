@@ -273,11 +273,13 @@ const EntryRow: React.FC<EntryRowProps> = ({ fragment, onSelect, selectedEntryId
             onClick={() => onSelect(data.id)}
         >
             <div className="grid grid-flow-col justify-between items-center">
-                <div className={`text-regular font-semibold truncate ${!data.title && "text-darkGray"}`}>{data.title ? data.title : "Untitled note"}</div>
+                <div className={`text-regular font-semibold truncate ${!data.title && "text-darkGray"}`}>
+                    {data.title ? data.title : "Untitled note"}
+                </div>
                 <div className="text-small text-darkGray">{new Date(data.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
             </div>
-            <div className="truncate text-regular">
-                {data.content}
+            <div className={`truncate text-regular ${!data.content && 'text-darkGray'}`}>
+                {data.content || 'No text'}
             </div>
         </div>
     );
