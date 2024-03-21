@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<0caffb349cef712a34a8aa24dd80ff92>>
+ * @generated SignedSource<<c5116725fae6999c61f737ea60cbffc9>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -15,6 +15,7 @@ export type MainPanelEntryRowFragment$data = {
   readonly createdAt: any;
   readonly id: string;
   readonly title: string | null | undefined;
+  readonly updatedAt: any;
   readonly " $fragmentType": "MainPanelEntryRowFragment";
 };
 export type MainPanelEntryRowFragment$key = {
@@ -53,6 +54,13 @@ const node: ReaderFragment = {
       "alias": null,
       "args": null,
       "kind": "ScalarField",
+      "name": "updatedAt",
+      "storageKey": null
+    },
+    {
+      "alias": null,
+      "args": null,
+      "kind": "ScalarField",
       "name": "content",
       "storageKey": null
     }
@@ -61,6 +69,6 @@ const node: ReaderFragment = {
   "abstractKey": null
 };
 
-(node as any).hash = "1602a076e639aa1aa54f0dd480138ad0";
+(node as any).hash = "f63d703394df5d05bb09d362b1cda37d";
 
 export default node;
