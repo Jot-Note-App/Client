@@ -403,6 +403,7 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
     const [updateEntry, _isUpdatingEntry] = useMutation(mainPanelUpdateEntryMutation);
     const [editorState, setEditorState] = useState(EditorState.createEmpty());
     const [saveTimer, setSaveTimer] = useState<number | null>(null);
+    const editorRef = useRef<Editor | null>(null);
 
     useEffect(() => {
         if (data.node && data.node?.__typename == 'Entry') {
@@ -411,25 +412,25 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
         }
     }, [data.node])
 
-    useEffect(() => {
-        if (data.node) {
-            if (saveTimer) {
-                clearTimeout(saveTimer);
-                console.log('Timer cancelled.');
-            }
-            console.log("Setting timer...")
-            const timer = setTimeout(() => {
-                console.log("Saving...")
-                saveEditorState(editorState);
-            }, 5000);
-            setSaveTimer(timer);
-        }
-        return () => {
-            if (saveTimer) {
-                clearTimeout(saveTimer);
-            }
-        };
-    }, [getPlainTextFromEditorState(editorState)])
+    // useEffect(() => {
+    //     if (data.node) {
+    //         if (saveTimer) {
+    //             clearTimeout(saveTimer);
+    //             console.log('Timer cancelled.');
+    //         }
+    //         console.log("Setting timer...")
+    //         const timer = setTimeout(() => {
+    //             console.log("Saving...")
+    //             saveEditorState(editorState);
+    //         }, 5000);
+    //         setSaveTimer(timer);
+    //     }
+    //     return () => {
+    //         if (saveTimer) {
+    //             clearTimeout(saveTimer);
+    //         }
+    //     };
+    // }, [getPlainTextFromEditorState(editorState)])
 
     const handleEditorStateChange = useCallback((editorState: EditorState) => {
         // if (data.node) {
@@ -475,8 +476,8 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
                     <div className="grid grid-flow-row min-w-full" style={{ gridTemplateRows: 'auto 1fr' }}>
                         <div className=' grid grid-flow-col px-20 pt-4 pb-1 text-small text-darkGray ' style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
                             <div className="flex flex-col ">
-                                <div >Last Edited: {convertTimeStringtoFormattedDateString(data.node.updatedAt)}</div>
-                                <div >Created: {convertTimeStringtoFormattedDateString(data.node.createdAt)}</div>
+                                <div >Last Edit Saved: {convertTimeStringtoFormattedDateString(data.node.updatedAt, true)}</div>
+                                <div >Created: {convertTimeStringtoFormattedDateString(data.node.createdAt, true)}</div>
                             </div>
                             <div className="text-center">
                                 Journal Name / <span className='text-offBlack'>{data.node.title || "Untitled note"} </span>
@@ -489,18 +490,31 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
                             </div>
                         </div>
                         <div className='overflow-y-scroll flex justify-center text-large'>
-                            <div className="w-9/12 pt-10">
-                                <Editor
-                                    editorState={editorState}
-                                    onChange={handleEditorStateChange}
-                                    handleKeyCommand={handleKeyCommand}
-                                    textAlignment='left'
-                                    spellCheck={true}
-                                    textDirectionality='LTR'
-                                    stripPastedStyles={true}
-                                    autoCapitalize='on'
-                                    placeholder='Start typing here ...'
-                                />
+                            <div className="w-9/12 h-full hover:cursor-text"
+                                style={{ maxWidth: '50rem' }}
+                                onClick={(e) => {
+                                    if (editorRef.current) {
+                                        editorRef.current.focus();
+                                        const editorStateWithFocusAtEnd = EditorState.moveFocusToEnd(editorState);
+                                        setEditorState(editorStateWithFocusAtEnd);
+                                    }
+                                    e.stopPropagation();
+                                }}>
+                                <div className='h-10 hover:cursor-default' onClick={e => e.stopPropagation()} />
+                                <div onClick={e => e.stopPropagation()}>
+                                    <Editor
+                                        ref={editorRef}
+                                        editorState={editorState}
+                                        onChange={handleEditorStateChange}
+                                        handleKeyCommand={handleKeyCommand}
+                                        textAlignment='left'
+                                        spellCheck={true}
+                                        textDirectionality='LTR'
+                                        stripPastedStyles={true}
+                                        autoCapitalize='on'
+                                        placeholder='Start typing here ...'
+                                    />
+                                </div>
                                 <div className='h-10' />
                             </div>
                         </div>
