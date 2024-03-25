@@ -15,6 +15,11 @@ import { UserContext } from '../components/UserContextProvider';
 import { MainPanelCreateJournalMutation$data } from '../__generated__/MainPanelCreateJournalMutation.graphql';
 import AddCircleIcon from '../icons/AddCircleIcon';
 import { MainPanelCreateEntryMutation, MainPanelCreateEntryMutation$data } from '../__generated__/MainPanelCreateEntryMutation.graphql';
+import { ContentBlock, ContentState, Editor, EditorState, RichUtils, convertFromRaw, convertToRaw } from 'draft-js';
+import SaveIcon from '../icons/SaveIcon';
+import { MainPanelEntryEditorQuery, MainPanelEntryEditorQuery$data } from '../__generated__/MainPanelEntryEditorQuery.graphql';
+import { convertStringToEditorState, getPlainTextFromEditorState } from '../utils/editor';
+import { convertTimeStringtoFormattedDateString } from '../utils/utils';
 interface MainPanelProps {
     selectedTab: MainPanelTab;
 }
@@ -266,7 +271,7 @@ const EntryRow: React.FC<EntryRowProps> = ({ fragment, onSelect, selectedEntryId
         entryRowFragment,
         fragment,
     ) as MainPanelEntryRowFragment$data;
-
+    const editorState = convertStringToEditorState(data.content)
     return (
         <div className={`hover:bg-secondary hover:cursor-pointer w-full h-16 border-b border-mediumGray py-2 px-5 grid grid-flow-row items-center ${data.id == selectedEntryId ? "bg-secondary" : "bg-white"}`}
             style={{ gridTemplateRows: 'auto 1fr' }}
@@ -276,10 +281,10 @@ const EntryRow: React.FC<EntryRowProps> = ({ fragment, onSelect, selectedEntryId
                 <div className={`text-regular font-semibold truncate ${!data.title && "text-darkGray"}`}>
                     {data.title ? data.title : "Untitled note"}
                 </div>
-                <div className="text-small text-darkGray">{new Date(data.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                <div className="text-small text-darkGray">{convertTimeStringtoFormattedDateString(data.createdAt)}</div>
             </div>
             <div className={`truncate text-regular ${!data.content && 'text-darkGray'}`}>
-                {data.content || 'No text'}
+                {data.content ? getPlainTextFromEditorState(editorState) : 'No text'}
             </div>
         </div>
     );
@@ -319,19 +324,23 @@ interface EntriesFeedProps {
     fragment: MainPanelEntriesFeedFragment$key;
     onSelectEntry: (id: string) => void;
     selectedEntryId: string | null;
+    selectedJournalId: string | null;
 }
 
-const EntriesFeed: React.FC<EntriesFeedProps> = ({ fragment, onSelectEntry, selectedEntryId }) => {
+const EntriesFeed: React.FC<EntriesFeedProps> = ({ fragment, onSelectEntry, selectedEntryId, selectedJournalId }) => {
     const data = useFragment(
         entriesFeedFragment,
         fragment,
     ) as MainPanelEntriesFeedFragment$data
-    if (!selectedEntryId) {
+    // Select the first entry by default when a new journal is selected
+    useEffect(() => {
         const entryId = data.entriesFeedJournals?.edges[0]?.node.entries?.edges[0]?.node.id
         if (entryId) {
             onSelectEntry(entryId)
         }
-    }
+    }, [selectedJournalId])
+
+
     return (
         <div className="w-full bg-white overflow-auto">
             {data.entriesFeedJournals?.edges.map((edge) => {
@@ -344,21 +353,161 @@ const EntriesFeed: React.FC<EntriesFeedProps> = ({ fragment, onSelectEntry, sele
     );
 }
 
+const mainPanelUpdateEntryMutation = graphql`
+mutation MainPanelUpdateEntryMutation($entryId: ID!, $content: String!, $title: String){
+  updateEntry(id: $entryId, input: {content: $content, title: $title}){
+    __typename
+    ... on EntryMutationSuccess {
+            entry {
+                id
+                title
+                content
+                updatedAt
+            }
+    }
+    ... on MutationFailure {
+        error
+    }
+  }
+}
+`
 
-interface JournalEditorProps {
+const mainPanelEntryEditorQuery = graphql`
+query MainPanelEntryEditorQuery($entryId: ID!){
+  node(id: $entryId){
+    __typename
+    ... on Entry {
+        id
+        title
+        content
+        createdAt
+        updatedAt
+    }
+  }
+}
+`
+interface EntryEditorProps {
     entryId: string | null;
 }
 
-const JournalEditor: React.FC<JournalEditorProps> = ({ entryId }) => {
+const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
+    if (!entryId) {
+        return (
+            <div className="w-full h-full flex flex-col gap-2 items-center justify-center text-mediumGray">
+                <div className="text-h3">No notes to show</div>
+                <div className="text-lg">Create a note in the side panel to get started!</div>
+            </div>
+        )
+    }
+    const data = useLazyLoadQuery(mainPanelEntryEditorQuery, { entryId: entryId }) as MainPanelEntryEditorQuery$data;
+    const [updateEntry, _isUpdatingEntry] = useMutation(mainPanelUpdateEntryMutation);
+    const [editorState, setEditorState] = useState(EditorState.createEmpty());
+    const [saveTimer, setSaveTimer] = useState<number | null>(null);
+
+    useEffect(() => {
+        if (data.node && data.node?.__typename == 'Entry') {
+            const editorState = convertStringToEditorState(data.node.content)
+            setEditorState(editorState);
+        }
+    }, [data.node])
+
+    useEffect(() => {
+        if (data.node) {
+            if (saveTimer) {
+                clearTimeout(saveTimer);
+                console.log('Timer cancelled.');
+            }
+            console.log("Setting timer...")
+            const timer = setTimeout(() => {
+                console.log("Saving...")
+                saveEditorState(editorState);
+            }, 5000);
+            setSaveTimer(timer);
+        }
+        return () => {
+            if (saveTimer) {
+                clearTimeout(saveTimer);
+            }
+        };
+    }, [getPlainTextFromEditorState(editorState)])
+
+    const handleEditorStateChange = useCallback((editorState: EditorState) => {
+        // if (data.node) {
+        //     if (saveTimer) {
+        //         clearTimeout(saveTimer);
+        //         setSaveTimer(null); // Reset timer state
+        //         console.log('Timer cancelled.');
+        //     }
+        //     console.log("Setting timer...")
+        //     const timer = setTimeout(() => {
+        //         console.log("Saving...")
+        //         saveEditorState(editorState);
+        //     }, 5000);
+        //     setSaveTimer(timer);
+        // }
+        setEditorState(editorState);
+    }, [data, saveTimer]);
+
+    const handleKeyCommand = useCallback((command: string, editorState: EditorState) => {
+        const newState = RichUtils.handleKeyCommand(editorState, command);
+        if (newState) {
+            setEditorState(newState);
+            return 'handled';
+        }
+        return 'not-handled';
+    }, []);
+
+    const saveEditorState = useCallback((editorState: EditorState) => {
+        const contentState = editorState.getCurrentContent();
+        const contentStateString = JSON.stringify(convertToRaw(contentState));
+        updateEntry({
+            variables: {
+                entryId: entryId,
+                content: contentStateString,
+            },
+        })
+    }, [entryId])
+
     return (
-        <div className="w-full h-full">
-            {entryId ?
-                <div>Entry Editor</div> :
-                <div className="w-full h-full flex flex-col gap-2 items-center justify-center text-mediumGray">
-                    <div className="text-h3">No notes to show</div>
-                    <div className="text-lg">Create a note in the side panel to get started!</div>
-                </div>}
-        </div>
+        <div className="w-full h-full flex justify-center">
+            {
+                data.node && data.node.__typename == "Entry" ?
+                    <div className="grid grid-flow-row min-w-full" style={{ gridTemplateRows: 'auto 1fr' }}>
+                        <div className=' grid grid-flow-col px-20 pt-4 pb-1 text-small text-darkGray ' style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
+                            <div className="flex flex-col ">
+                                <div >Last Edited: {convertTimeStringtoFormattedDateString(data.node.updatedAt)}</div>
+                                <div >Created: {convertTimeStringtoFormattedDateString(data.node.createdAt)}</div>
+                            </div>
+                            <div className="text-center">
+                                Journal Name / <span className='text-offBlack'>{data.node.title || "Untitled note"} </span>
+                            </div>
+                            <div className="flex justify-end items-center">
+                                {/* TODO: replace SaveIcon with loading indicator when saving*/}
+                                <div className="hover:text-main hover:cursor-pointer p-3" onClick={() => saveEditorState(editorState)}>
+                                    <SaveIcon />
+                                </div>
+                            </div>
+                        </div>
+                        <div className='overflow-y-scroll flex justify-center text-large'>
+                            <div className="w-9/12 pt-10">
+                                <Editor
+                                    editorState={editorState}
+                                    onChange={handleEditorStateChange}
+                                    handleKeyCommand={handleKeyCommand}
+                                    textAlignment='left'
+                                    spellCheck={true}
+                                    textDirectionality='LTR'
+                                    stripPastedStyles={true}
+                                    autoCapitalize='on'
+                                    placeholder='Start typing here ...'
+                                />
+                                <div className='h-10' />
+                            </div>
+                        </div>
+                    </div> :
+                    <div className='grid min-w-full'>Loading...</div>
+            }
+        </div >
     )
 };
 
@@ -401,10 +550,12 @@ const MainPanel: React.FC<MainPanelProps> = ({ selectedTab }) => {
                 <JournalSelector fragment={data.user} onSelect={onJournalSelected} />
                 <EntriesFeedFilters onSearchSubmit={onSearchSubmit} onCreateEntry={onEntryCreated} journalId={currJournalId} />
                 <Suspense fallback={<div>Loading...</div>}>
-                    <EntriesFeed fragment={data.user} onSelectEntry={setCurrEntryId} selectedEntryId={currEntryId} />
+                    <EntriesFeed fragment={data.user} onSelectEntry={setCurrEntryId} selectedEntryId={currEntryId} selectedJournalId={currJournalId} />
                 </Suspense>
             </div>
-            <JournalEditor entryId={currEntryId} />
+            <Suspense fallback={<div>Loading...</div>}>
+                <EntryEditor entryId={currEntryId} />
+            </Suspense>
         </div>
     );
 };
