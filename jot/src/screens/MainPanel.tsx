@@ -323,11 +323,12 @@ const entriesFeedFragment = graphql`
 interface EntriesFeedProps {
     fragment: MainPanelEntriesFeedFragment$key;
     onSelectEntry: (id: string) => void;
+    onEmptyFeed: () => void;
     selectedEntryId: string | null;
     selectedJournalId: string | null;
 }
 
-const EntriesFeed: React.FC<EntriesFeedProps> = ({ fragment, onSelectEntry, selectedEntryId, selectedJournalId }) => {
+const EntriesFeed: React.FC<EntriesFeedProps> = ({ fragment, onSelectEntry, onEmptyFeed, selectedEntryId, selectedJournalId }) => {
     const data = useFragment(
         entriesFeedFragment,
         fragment,
@@ -340,6 +341,13 @@ const EntriesFeed: React.FC<EntriesFeedProps> = ({ fragment, onSelectEntry, sele
         }
     }, [selectedJournalId])
 
+    useEffect(() => {
+        console.log("Feed: ", data.entriesFeedJournals?.edges[0]?.node.entries?.edges)
+        if (data.entriesFeedJournals?.edges[0]?.node.entries?.edges.length == 0) {
+            console.log("onEmptyFeed")
+            onEmptyFeed()
+        }
+    }, [data.entriesFeedJournals])
 
     return (
         <div className="w-full bg-white overflow-auto">
@@ -387,38 +395,35 @@ query MainPanelEntryEditorQuery($entryId: ID!){
 }
 `
 interface EntryEditorProps {
-    entryId: string | null;
+    entryId: string;
 }
 
 const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
-    if (!entryId) {
-        return (
-            <div className="w-full h-full flex flex-col gap-2 items-center justify-center text-mediumGray">
-                <div className="text-h3">No notes to show</div>
-                <div className="text-lg">Create a note in the side panel to get started!</div>
-            </div>
-        )
-    }
     const data = useLazyLoadQuery(mainPanelEntryEditorQuery, { entryId: entryId }) as MainPanelEntryEditorQuery$data;
     const [updateEntry, _isUpdatingEntry] = useMutation(mainPanelUpdateEntryMutation);
-    const [editorState, setEditorState] = useState(EditorState.createEmpty());
+    const content = data.node?.__typename == 'Entry' ? data.node.content : '';
+    const [editorState, setEditorState] = useState(convertStringToEditorState(content));
     const editorRef = useRef<Editor | null>(null);
     const timerRef = useRef<number | null>(null);
 
     useEffect(() => {
+        clearTimer(timerRef)
         if (data.node && data.node?.__typename == 'Entry') {
             const editorState = convertStringToEditorState(data.node.content)
             setEditorState(editorState);
         }
-    }, [data.node])
+    }, [entryId])
 
+    const clearTimer = useCallback((timer: React.MutableRefObject<number | null>) => {
+        if (timer.current) {
+            clearTimeout(timer.current);
+            timer.current = null;
+            console.log('Timer cancelled.');
+        }
+    }, [])
     const handleEditorStateChange = useCallback((editorState: EditorState) => {
         if (data.node) {
-            if (timerRef.current) {
-                clearTimeout(timerRef.current);
-                timerRef.current = null; // Reset timer state
-                console.log('Timer cancelled.');
-            }
+            clearTimer(timerRef)
             console.log("Setting timer...")
             const timer = setTimeout(() => {
                 console.log("Saving...")
@@ -518,38 +523,49 @@ const MainPanel: React.FC<MainPanelProps> = ({ selectedTab }) => {
     const [currJournalId, setCurrJournalId] = useState<string | null>(null)
     const [currEntryId, setCurrEntryId] = useState<string | null>(null)
     const [searchTerm, setSearchTerm] = useState<string | null>(null)
+    const [isFeedEmpty, setIsFeedEmpty] = useState<boolean>(false)
     const data = useLazyLoadQuery(mainPanelQuery, { after: null, journalId: currJournalId, search: searchTerm }) as MainPanelQuery$data;
 
     const onJournalSelected = useCallback((journalId: string) => {
+        setIsFeedEmpty(false)
         setSearchTerm(null)
         setCurrEntryId(null)
         setCurrJournalId(journalId);
     }, [])
 
     const onSearchSubmit = useCallback((search: string) => {
-        if (search == '') {
-            setSearchTerm(null)
-        } else {
-            setSearchTerm(search)
-        }
+        setSearchTerm(search != '' ? search : null)
     }, [])
 
     const onEntryCreated = useCallback((entryId: string) => {
+        setIsFeedEmpty(false)
         setCurrEntryId(entryId)
     }, [])
 
     return (
         <div className="w-full flex">
-            <div className="h-screen grid grid-flow-row w-80 border-x border-mediumGray" style={{ gridTemplateRows: 'auto auto 1fr' }}>
+            <div className="h-screen grid grid-flow-row w-72 border-x border-mediumGray" style={{ gridTemplateRows: 'auto auto 1fr', minWidth: '18rem' }}>
                 <JournalSelector fragment={data.user} onSelect={onJournalSelected} />
                 <EntriesFeedFilters onSearchSubmit={onSearchSubmit} onCreateEntry={onEntryCreated} journalId={currJournalId} />
                 <Suspense fallback={<div>Loading...</div>}>
-                    <EntriesFeed fragment={data.user} onSelectEntry={setCurrEntryId} selectedEntryId={currEntryId} selectedJournalId={currJournalId} />
+                    <EntriesFeed fragment={data.user} onSelectEntry={setCurrEntryId} selectedEntryId={currEntryId}
+                        selectedJournalId={currJournalId} onEmptyFeed={() => setIsFeedEmpty(true)} />
                 </Suspense>
             </div>
-            <Suspense fallback={<div>Loading...</div>}>
-                <EntryEditor entryId={currEntryId} />
-            </Suspense>
+            {
+                currEntryId ?
+                    <Suspense fallback={<div>Loading...</div>}>
+                        <EntryEditor entryId={currEntryId} />
+                    </Suspense>
+                    : !isFeedEmpty ?
+                        <div>Loading...</div>
+                        :
+                        <div className="w-full h-full flex flex-col gap-2 items-center justify-center text-mediumGray">
+                            <div className="text-h3">No notes to show</div>
+                            <div className="text-lg">Create a note in the side panel to get started!</div>
+                        </div>
+            }
+
         </div>
     );
 };
