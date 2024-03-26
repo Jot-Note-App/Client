@@ -402,8 +402,8 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
     const data = useLazyLoadQuery(mainPanelEntryEditorQuery, { entryId: entryId }) as MainPanelEntryEditorQuery$data;
     const [updateEntry, _isUpdatingEntry] = useMutation(mainPanelUpdateEntryMutation);
     const [editorState, setEditorState] = useState(EditorState.createEmpty());
-    const [saveTimer, setSaveTimer] = useState<number | null>(null);
     const editorRef = useRef<Editor | null>(null);
+    const timerRef = useRef<number | null>(null);
 
     useEffect(() => {
         if (data.node && data.node?.__typename == 'Entry') {
@@ -412,42 +412,22 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
         }
     }, [data.node])
 
-    // useEffect(() => {
-    //     if (data.node) {
-    //         if (saveTimer) {
-    //             clearTimeout(saveTimer);
-    //             console.log('Timer cancelled.');
-    //         }
-    //         console.log("Setting timer...")
-    //         const timer = setTimeout(() => {
-    //             console.log("Saving...")
-    //             saveEditorState(editorState);
-    //         }, 5000);
-    //         setSaveTimer(timer);
-    //     }
-    //     return () => {
-    //         if (saveTimer) {
-    //             clearTimeout(saveTimer);
-    //         }
-    //     };
-    // }, [getPlainTextFromEditorState(editorState)])
-
     const handleEditorStateChange = useCallback((editorState: EditorState) => {
-        // if (data.node) {
-        //     if (saveTimer) {
-        //         clearTimeout(saveTimer);
-        //         setSaveTimer(null); // Reset timer state
-        //         console.log('Timer cancelled.');
-        //     }
-        //     console.log("Setting timer...")
-        //     const timer = setTimeout(() => {
-        //         console.log("Saving...")
-        //         saveEditorState(editorState);
-        //     }, 5000);
-        //     setSaveTimer(timer);
-        // }
+        if (data.node) {
+            if (timerRef.current) {
+                clearTimeout(timerRef.current);
+                timerRef.current = null; // Reset timer state
+                console.log('Timer cancelled.');
+            }
+            console.log("Setting timer...")
+            const timer = setTimeout(() => {
+                console.log("Saving...")
+                saveEditorState(editorState);
+            }, 5000);
+            timerRef.current = timer;
+        }
         setEditorState(editorState);
-    }, [data, saveTimer]);
+    }, [data, timerRef]);
 
     const handleKeyCommand = useCallback((command: string, editorState: EditorState) => {
         const newState = RichUtils.handleKeyCommand(editorState, command);
