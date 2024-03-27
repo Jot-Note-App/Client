@@ -10,7 +10,7 @@ interface MainScreenProps {
 const MainScreen: React.FC<MainScreenProps> = ({ onLogoutCallback }) => {
     const [selectedTab, setSelectedTab] = useState(MainPanelTab.Journals);
     return (
-        <div className="min-h-screen min-w-screen flex">
+        <div className="min-h-screen max-h-screen min-w-screen flex">
             <MainSidePanel onLogoutCallback={onLogoutCallback} selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
             <MainPanel selectedTab={selectedTab} />
         </div>

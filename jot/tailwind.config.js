@@ -30,6 +30,7 @@ export default {
         subheading: ["17px", { lineHeight: "28px", fontWeight: "700" }],
         large: ["16px", { lineHeight: "24px", fontWeight: "400" }],
         regular: ["14px", { lineHeight: "24px", fontWeight: "400" }],
+        body: ["14px", { lineHeight: "24px", fontWeight: "450" }],
         small: ["12px", { lineHeight: "20px", fontWeight: "500" }],
         xSmall: ["11px", { lineHeight: "16px", fontWeight: "500" }],
       }

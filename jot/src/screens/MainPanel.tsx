@@ -15,6 +15,12 @@ import { UserContext } from '../components/UserContextProvider';
 import { MainPanelCreateJournalMutation$data } from '../__generated__/MainPanelCreateJournalMutation.graphql';
 import AddCircleIcon from '../icons/AddCircleIcon';
 import { MainPanelCreateEntryMutation, MainPanelCreateEntryMutation$data } from '../__generated__/MainPanelCreateEntryMutation.graphql';
+import { ContentBlock, ContentState, Editor, EditorState, Modifier, RichUtils, convertFromRaw, convertToRaw, getDefaultKeyBinding } from 'draft-js';
+import SaveIcon from '../icons/SaveIcon';
+import { MainPanelEntryEditorQuery, MainPanelEntryEditorQuery$data } from '../__generated__/MainPanelEntryEditorQuery.graphql';
+import { convertStringToEditorState, getPlainTextFromEditorState, handleEditorKeyCommand } from '../utils/editor';
+import { convertTimeStringtoFormattedDateString } from '../utils/utils';
+import 'draft-js/dist/Draft.css';
 interface MainPanelProps {
     selectedTab: MainPanelTab;
 }
@@ -266,7 +272,9 @@ const EntryRow: React.FC<EntryRowProps> = ({ fragment, onSelect, selectedEntryId
         entryRowFragment,
         fragment,
     ) as MainPanelEntryRowFragment$data;
-
+    const editorState = convertStringToEditorState(data.content)
+    const editorText = getPlainTextFromEditorState(editorState)
+    const isEditorTextEmpty = editorText == ''
     return (
         <div className={`hover:bg-secondary hover:cursor-pointer w-full h-16 border-b border-mediumGray py-2 px-5 grid grid-flow-row items-center ${data.id == selectedEntryId ? "bg-secondary" : "bg-white"}`}
             style={{ gridTemplateRows: 'auto 1fr' }}
@@ -276,10 +284,10 @@ const EntryRow: React.FC<EntryRowProps> = ({ fragment, onSelect, selectedEntryId
                 <div className={`text-regular font-semibold truncate ${!data.title && "text-darkGray"}`}>
                     {data.title ? data.title : "Untitled note"}
                 </div>
-                <div className="text-small text-darkGray">{new Date(data.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                <div className="text-small text-darkGray">{convertTimeStringtoFormattedDateString(data.createdAt)}</div>
             </div>
-            <div className={`truncate text-regular ${!data.content && 'text-darkGray'}`}>
-                {data.content || 'No text'}
+            <div className={`truncate text-regular ${isEditorTextEmpty && 'text-darkGray'}`}>
+                {!isEditorTextEmpty ? editorText : 'No text'}
             </div>
         </div>
     );
@@ -318,20 +326,30 @@ const entriesFeedFragment = graphql`
 interface EntriesFeedProps {
     fragment: MainPanelEntriesFeedFragment$key;
     onSelectEntry: (id: string) => void;
+    onEmptyFeed: () => void;
     selectedEntryId: string | null;
+    selectedJournalId: string | null;
 }
 
-const EntriesFeed: React.FC<EntriesFeedProps> = ({ fragment, onSelectEntry, selectedEntryId }) => {
+const EntriesFeed: React.FC<EntriesFeedProps> = ({ fragment, onSelectEntry, onEmptyFeed, selectedEntryId, selectedJournalId }) => {
     const data = useFragment(
         entriesFeedFragment,
         fragment,
     ) as MainPanelEntriesFeedFragment$data
-    if (!selectedEntryId) {
+    // Select the first entry by default when a new journal is selected
+    useEffect(() => {
         const entryId = data.entriesFeedJournals?.edges[0]?.node.entries?.edges[0]?.node.id
         if (entryId) {
             onSelectEntry(entryId)
         }
-    }
+    }, [selectedJournalId])
+
+    useEffect(() => {
+        if (data.entriesFeedJournals?.edges[0]?.node.entries?.edges.length == 0) {
+            onEmptyFeed()
+        }
+    }, [data.entriesFeedJournals])
+
     return (
         <div className="w-full bg-white overflow-auto">
             {data.entriesFeedJournals?.edges.map((edge) => {
@@ -344,21 +362,165 @@ const EntriesFeed: React.FC<EntriesFeedProps> = ({ fragment, onSelectEntry, sele
     );
 }
 
+const mainPanelUpdateEntryMutation = graphql`
+mutation MainPanelUpdateEntryMutation($entryId: ID!, $content: String!, $title: String){
+  updateEntry(id: $entryId, input: {content: $content, title: $title}){
+    __typename
+    ... on EntryMutationSuccess {
+            entry {
+                id
+                title
+                content
+                updatedAt
+            }
+    }
+    ... on MutationFailure {
+        error
+    }
+  }
+}
+`
 
-interface JournalEditorProps {
-    entryId: string | null;
+const mainPanelEntryEditorQuery = graphql`
+query MainPanelEntryEditorQuery($entryId: ID!){
+  node(id: $entryId){
+    __typename
+    ... on Entry {
+        id
+        title
+        content
+        createdAt
+        updatedAt
+        journal {
+            id
+            name
+        }
+    }
+  }
+}
+`
+interface EntryEditorProps {
+    entryId: string;
 }
 
-const JournalEditor: React.FC<JournalEditorProps> = ({ entryId }) => {
+const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
+    const data = useLazyLoadQuery(mainPanelEntryEditorQuery, { entryId: entryId }) as MainPanelEntryEditorQuery$data;
+    const [updateEntry, _isUpdatingEntry] = useMutation(mainPanelUpdateEntryMutation);
+    const content = data.node?.__typename == 'Entry' ? data.node.content : '';
+    const [editorState, setEditorState] = useState(convertStringToEditorState(content));
+    const editorRef = useRef<Editor | null>(null);
+    const timerRef = useRef<number | null>(null);
+
+    const clearTimer = useCallback((timer: React.MutableRefObject<number | null>) => {
+        if (timer.current) {
+            clearTimeout(timer.current);
+            timer.current = null;
+        }
+    }, [])
+
+    useEffect(() => {
+        clearTimer(timerRef)
+        if (data.node && data.node?.__typename == 'Entry') {
+            const editorState = convertStringToEditorState(data.node.content)
+            setEditorState(editorState);
+        }
+    }, [entryId])
+
+
+    const handleEditorStateChange = useCallback((editorState: EditorState) => {
+        if (data.node) {
+            clearTimer(timerRef)
+            const timer = setTimeout(() => {
+                saveEditorState(editorState);
+            }, 5000);
+            timerRef.current = timer;
+        }
+        setEditorState(editorState);
+    }, [data, timerRef]);
+
+    const handleKeyCommand = useCallback((command: string, editorState: EditorState) => {
+        const newState = RichUtils.handleKeyCommand(editorState, command);
+        if (newState) {
+            setEditorState(newState);
+            return 'handled';
+        }
+        return 'not-handled';
+    }, []);
+
+    const keyBindingFn = useCallback(
+        (e: React.KeyboardEvent<HTMLDivElement>): string | null => {
+            const newEditorState = handleEditorKeyCommand(e, editorState);
+            setEditorState(newEditorState);
+            return getDefaultKeyBinding(e);
+        },
+        [editorState]
+    );
+
+    const saveEditorState = useCallback((editorState: EditorState) => {
+        const contentState = editorState.getCurrentContent();
+        const contentStateString = JSON.stringify(convertToRaw(contentState));
+        updateEntry({
+            variables: {
+                entryId: entryId,
+                content: contentStateString,
+            },
+        })
+    }, [entryId])
+
     return (
-        <div className="w-full h-full">
-            {entryId ?
-                <div>Entry Editor</div> :
-                <div className="w-full h-full flex flex-col gap-2 items-center justify-center text-mediumGray">
-                    <div className="text-h3">No notes to show</div>
-                    <div className="text-lg">Create a note in the side panel to get started!</div>
-                </div>}
-        </div>
+        <div className="w-full h-full flex justify-center">
+            {
+                data.node && data.node.__typename == "Entry" ?
+                    <div className="grid grid-flow-row min-w-full" style={{ gridTemplateRows: 'auto 1fr' }}>
+                        <div className=' grid grid-flow-col px-20 pt-4 pb-1 text-small text-darkGray ' style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
+                            <div className="flex flex-col ">
+                                <div >Last Edit Saved: {convertTimeStringtoFormattedDateString(data.node.updatedAt, true)}</div>
+                                <div >Created: {convertTimeStringtoFormattedDateString(data.node.createdAt, true)}</div>
+                            </div>
+                            <div className="text-center">
+                                {data.node.journal.name} / <span className='text-offBlack'>{data.node.title || "Untitled note"} </span>
+                            </div>
+                            <div className="flex justify-end items-center">
+                                {/* TODO: replace SaveIcon with loading indicator when saving*/}
+                                <div className="hover:text-main hover:cursor-pointer p-3" onClick={() => saveEditorState(editorState)}>
+                                    <SaveIcon />
+                                </div>
+                            </div>
+                        </div>
+                        <div className='overflow-y-scroll flex justify-center text-body'>
+                            <div className="w-9/12 h-full hover:cursor-text"
+                                style={{ maxWidth: '50rem' }}
+                                onClick={(e) => {
+                                    if (editorRef.current) {
+                                        editorRef.current.focus();
+                                        const editorStateWithFocusAtEnd = EditorState.moveFocusToEnd(editorState);
+                                        setEditorState(editorStateWithFocusAtEnd);
+                                    }
+                                    e.stopPropagation();
+                                }}>
+                                <div className='h-10 hover:cursor-default' onClick={e => e.stopPropagation()} />
+                                <div onClick={e => e.stopPropagation()}>
+                                    <Editor
+                                        ref={editorRef}
+                                        editorState={editorState}
+                                        onChange={handleEditorStateChange}
+                                        handleKeyCommand={handleKeyCommand}
+                                        textAlignment='left'
+                                        spellCheck={true}
+                                        textDirectionality='LTR'
+                                        stripPastedStyles={true}
+                                        autoCapitalize='on'
+                                        placeholder='Start typing here ...'
+                                        keyBindingFn={keyBindingFn}
+                                    />
+                                </div>
+                                <div className='h-10' />
+                            </div>
+                        </div>
+                    </div> :
+                    <div className='grid min-w-full'>Loading...</div>
+            }
+        </div >
     )
 };
 
@@ -375,36 +537,49 @@ const MainPanel: React.FC<MainPanelProps> = ({ selectedTab }) => {
     const [currJournalId, setCurrJournalId] = useState<string | null>(null)
     const [currEntryId, setCurrEntryId] = useState<string | null>(null)
     const [searchTerm, setSearchTerm] = useState<string | null>(null)
+    const [isFeedEmpty, setIsFeedEmpty] = useState<boolean>(false)
     const data = useLazyLoadQuery(mainPanelQuery, { after: null, journalId: currJournalId, search: searchTerm }) as MainPanelQuery$data;
 
     const onJournalSelected = useCallback((journalId: string) => {
+        setIsFeedEmpty(false)
         setSearchTerm(null)
         setCurrEntryId(null)
         setCurrJournalId(journalId);
     }, [])
 
     const onSearchSubmit = useCallback((search: string) => {
-        if (search == '') {
-            setSearchTerm(null)
-        } else {
-            setSearchTerm(search)
-        }
+        setSearchTerm(search != '' ? search : null)
     }, [])
 
     const onEntryCreated = useCallback((entryId: string) => {
+        setIsFeedEmpty(false)
         setCurrEntryId(entryId)
     }, [])
 
     return (
         <div className="w-full flex">
-            <div className="h-screen grid grid-flow-row w-80 border-x border-mediumGray" style={{ gridTemplateRows: 'auto auto 1fr' }}>
+            <div className="h-screen grid grid-flow-row w-72 border-x border-mediumGray" style={{ gridTemplateRows: 'auto auto 1fr', minWidth: '18rem' }}>
                 <JournalSelector fragment={data.user} onSelect={onJournalSelected} />
                 <EntriesFeedFilters onSearchSubmit={onSearchSubmit} onCreateEntry={onEntryCreated} journalId={currJournalId} />
                 <Suspense fallback={<div>Loading...</div>}>
-                    <EntriesFeed fragment={data.user} onSelectEntry={setCurrEntryId} selectedEntryId={currEntryId} />
+                    <EntriesFeed fragment={data.user} onSelectEntry={setCurrEntryId} selectedEntryId={currEntryId}
+                        selectedJournalId={currJournalId} onEmptyFeed={() => setIsFeedEmpty(true)} />
                 </Suspense>
             </div>
-            <JournalEditor entryId={currEntryId} />
+            {
+                currEntryId ?
+                    <Suspense fallback={<div>Loading...</div>}>
+                        <EntryEditor entryId={currEntryId} />
+                    </Suspense>
+                    : !isFeedEmpty ?
+                        <div>Loading...</div>
+                        :
+                        <div className="w-full h-full flex flex-col gap-2 items-center justify-center text-mediumGray">
+                            <div className="text-h3">No notes to show</div>
+                            <div className="text-lg">Create a note in the side panel to get started!</div>
+                        </div>
+            }
+
         </div>
     );
 };
