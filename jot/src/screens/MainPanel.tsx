@@ -15,11 +15,12 @@ import { UserContext } from '../components/UserContextProvider';
 import { MainPanelCreateJournalMutation$data } from '../__generated__/MainPanelCreateJournalMutation.graphql';
 import AddCircleIcon from '../icons/AddCircleIcon';
 import { MainPanelCreateEntryMutation, MainPanelCreateEntryMutation$data } from '../__generated__/MainPanelCreateEntryMutation.graphql';
-import { ContentBlock, ContentState, Editor, EditorState, RichUtils, convertFromRaw, convertToRaw } from 'draft-js';
+import { ContentBlock, ContentState, Editor, EditorState, Modifier, RichUtils, convertFromRaw, convertToRaw, getDefaultKeyBinding } from 'draft-js';
 import SaveIcon from '../icons/SaveIcon';
 import { MainPanelEntryEditorQuery, MainPanelEntryEditorQuery$data } from '../__generated__/MainPanelEntryEditorQuery.graphql';
-import { convertStringToEditorState, getPlainTextFromEditorState } from '../utils/editor';
+import { convertStringToEditorState, getPlainTextFromEditorState, handleEditorKeyCommand } from '../utils/editor';
 import { convertTimeStringtoFormattedDateString } from '../utils/utils';
+import 'draft-js/dist/Draft.css';
 interface MainPanelProps {
     selectedTab: MainPanelTab;
 }
@@ -272,6 +273,8 @@ const EntryRow: React.FC<EntryRowProps> = ({ fragment, onSelect, selectedEntryId
         fragment,
     ) as MainPanelEntryRowFragment$data;
     const editorState = convertStringToEditorState(data.content)
+    const editorText = getPlainTextFromEditorState(editorState)
+    const isEditorTextEmpty = editorText == ''
     return (
         <div className={`hover:bg-secondary hover:cursor-pointer w-full h-16 border-b border-mediumGray py-2 px-5 grid grid-flow-row items-center ${data.id == selectedEntryId ? "bg-secondary" : "bg-white"}`}
             style={{ gridTemplateRows: 'auto 1fr' }}
@@ -283,8 +286,8 @@ const EntryRow: React.FC<EntryRowProps> = ({ fragment, onSelect, selectedEntryId
                 </div>
                 <div className="text-small text-darkGray">{convertTimeStringtoFormattedDateString(data.createdAt)}</div>
             </div>
-            <div className={`truncate text-regular ${!data.content && 'text-darkGray'}`}>
-                {data.content ? getPlainTextFromEditorState(editorState) : 'No text'}
+            <div className={`truncate text-regular ${isEditorTextEmpty && 'text-darkGray'}`}>
+                {!isEditorTextEmpty ? editorText : 'No text'}
             </div>
         </div>
     );
@@ -342,9 +345,7 @@ const EntriesFeed: React.FC<EntriesFeedProps> = ({ fragment, onSelectEntry, onEm
     }, [selectedJournalId])
 
     useEffect(() => {
-        console.log("Feed: ", data.entriesFeedJournals?.edges[0]?.node.entries?.edges)
         if (data.entriesFeedJournals?.edges[0]?.node.entries?.edges.length == 0) {
-            console.log("onEmptyFeed")
             onEmptyFeed()
         }
     }, [data.entriesFeedJournals])
@@ -390,6 +391,10 @@ query MainPanelEntryEditorQuery($entryId: ID!){
         content
         createdAt
         updatedAt
+        journal {
+            id
+            name
+        }
     }
   }
 }
@@ -406,6 +411,13 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
     const editorRef = useRef<Editor | null>(null);
     const timerRef = useRef<number | null>(null);
 
+    const clearTimer = useCallback((timer: React.MutableRefObject<number | null>) => {
+        if (timer.current) {
+            clearTimeout(timer.current);
+            timer.current = null;
+        }
+    }, [])
+
     useEffect(() => {
         clearTimer(timerRef)
         if (data.node && data.node?.__typename == 'Entry') {
@@ -414,19 +426,11 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
         }
     }, [entryId])
 
-    const clearTimer = useCallback((timer: React.MutableRefObject<number | null>) => {
-        if (timer.current) {
-            clearTimeout(timer.current);
-            timer.current = null;
-            console.log('Timer cancelled.');
-        }
-    }, [])
+
     const handleEditorStateChange = useCallback((editorState: EditorState) => {
         if (data.node) {
             clearTimer(timerRef)
-            console.log("Setting timer...")
             const timer = setTimeout(() => {
-                console.log("Saving...")
                 saveEditorState(editorState);
             }, 5000);
             timerRef.current = timer;
@@ -442,6 +446,15 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
         }
         return 'not-handled';
     }, []);
+
+    const keyBindingFn = useCallback(
+        (e: React.KeyboardEvent<HTMLDivElement>): string | null => {
+            const newEditorState = handleEditorKeyCommand(e, editorState);
+            setEditorState(newEditorState);
+            return getDefaultKeyBinding(e);
+        },
+        [editorState]
+    );
 
     const saveEditorState = useCallback((editorState: EditorState) => {
         const contentState = editorState.getCurrentContent();
@@ -465,7 +478,7 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
                                 <div >Created: {convertTimeStringtoFormattedDateString(data.node.createdAt, true)}</div>
                             </div>
                             <div className="text-center">
-                                Journal Name / <span className='text-offBlack'>{data.node.title || "Untitled note"} </span>
+                                {data.node.journal.name} / <span className='text-offBlack'>{data.node.title || "Untitled note"} </span>
                             </div>
                             <div className="flex justify-end items-center">
                                 {/* TODO: replace SaveIcon with loading indicator when saving*/}
@@ -474,7 +487,7 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
                                 </div>
                             </div>
                         </div>
-                        <div className='overflow-y-scroll flex justify-center text-large'>
+                        <div className='overflow-y-scroll flex justify-center text-body'>
                             <div className="w-9/12 h-full hover:cursor-text"
                                 style={{ maxWidth: '50rem' }}
                                 onClick={(e) => {
@@ -498,6 +511,7 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
                                         stripPastedStyles={true}
                                         autoCapitalize='on'
                                         placeholder='Start typing here ...'
+                                        keyBindingFn={keyBindingFn}
                                     />
                                 </div>
                                 <div className='h-10' />

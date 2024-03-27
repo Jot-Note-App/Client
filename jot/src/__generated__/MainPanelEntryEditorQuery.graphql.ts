@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<91872f05cd1c059805920bb7680b8053>>
+ * @generated SignedSource<<6b642168c253493a8db508e2ea4a02b9>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -18,6 +18,10 @@ export type MainPanelEntryEditorQuery$data = {
     readonly content: string | null | undefined;
     readonly createdAt: any;
     readonly id: string;
+    readonly journal: {
+      readonly id: string;
+      readonly name: string;
+    };
     readonly title: string | null | undefined;
     readonly updatedAt: any;
   } | {
@@ -87,6 +91,25 @@ v7 = {
   "kind": "ScalarField",
   "name": "updatedAt",
   "storageKey": null
+},
+v8 = {
+  "alias": null,
+  "args": null,
+  "concreteType": "Journal",
+  "kind": "LinkedField",
+  "name": "journal",
+  "plural": false,
+  "selections": [
+    (v3/*: any*/),
+    {
+      "alias": null,
+      "args": null,
+      "kind": "ScalarField",
+      "name": "name",
+      "storageKey": null
+    }
+  ],
+  "storageKey": null
 };
 return {
   "fragment": {
@@ -111,7 +134,8 @@ return {
               (v4/*: any*/),
               (v5/*: any*/),
               (v6/*: any*/),
-              (v7/*: any*/)
+              (v7/*: any*/),
+              (v8/*: any*/)
             ],
             "type": "Entry",
             "abstractKey": null
@@ -145,7 +169,8 @@ return {
               (v4/*: any*/),
               (v5/*: any*/),
               (v6/*: any*/),
-              (v7/*: any*/)
+              (v7/*: any*/),
+              (v8/*: any*/)
             ],
             "type": "Entry",
             "abstractKey": null
@@ -156,16 +181,16 @@ return {
     ]
   },
   "params": {
-    "cacheID": "54aa4d3776fb335204723ed31c210dcf",
+    "cacheID": "09b9d92789a1bca2b5b30ba43f54692c",
     "id": null,
     "metadata": {},
     "name": "MainPanelEntryEditorQuery",
     "operationKind": "query",
-    "text": "query MainPanelEntryEditorQuery(\n  $entryId: ID!\n) {\n  node(id: $entryId) {\n    __typename\n    ... on Entry {\n      id\n      title\n      content\n      createdAt\n      updatedAt\n    }\n    id\n  }\n}\n"
+    "text": "query MainPanelEntryEditorQuery(\n  $entryId: ID!\n) {\n  node(id: $entryId) {\n    __typename\n    ... on Entry {\n      id\n      title\n      content\n      createdAt\n      updatedAt\n      journal {\n        id\n        name\n      }\n    }\n    id\n  }\n}\n"
   }
 };
 })();
 
-(node as any).hash = "c513d02ec500d068a7899f3634538fae";
+(node as any).hash = "45656e390dc12b93e0b570d3e0b51964";
 
 export default node;
