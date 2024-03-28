@@ -18,3 +18,21 @@
   -webkit-text-size-adjust: 100%;
 
 }
+
+.DraftEditor-editorContainer h1 {
+  font-size: 46px;
+  font-weight: 700;
+  line-height: 56px;
+}
+
+.DraftEditor-editorContainer h2 {
+  font-size: 38px;
+  font-weight: 700;
+  line-height: 46px;
+}
+
+.DraftEditor-editorContainer h3 {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 37px;
+}

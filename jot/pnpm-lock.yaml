@@ -5,6 +5,15 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@draft-js-plugins/buttons':
+    specifier: ^4.3.3
+    version: 4.3.3(draft-js@0.11.7)(react-dom@18.2.0)(react@18.2.0)
+  '@draft-js-plugins/editor':
+    specifier: ^4.1.4
+    version: 4.1.4(draft-js@0.11.7)(react-dom@18.2.0)(react@18.2.0)
+  '@draft-js-plugins/static-toolbar':
+    specifier: ^4.1.4
+    version: 4.1.4(draft-js@0.11.7)(react-dom@18.2.0)(react@18.2.0)
   '@floating-ui/react':
     specifier: ^0.26.9
     version: 0.26.9(react-dom@18.2.0)(react@18.2.0)
@@ -450,6 +459,56 @@ packages:
       '@babel/helper-validator-identifier': 7.22.20
       to-fast-properties: 2.0.0
     dev: true
+
+  /@draft-js-plugins/buttons@4.3.3(draft-js@0.11.7)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-XGQBiRXYLGAO6uBrajpg1Tl42FD7o12oT9bM+ikciPMXdHOyJ6y8cJhY4YZI4AYhY37MNf6bdh9/p81TtIpcHA==}
+    peerDependencies:
+      draft-js: ^0.10.1 || ^0.11.0
+      react: ^16.8.0 || ^17.0.0 || >=18.0.0
+      react-dom: ^16.8.0 || ^17.0.0 || >=18.0.0
+    dependencies:
+      clsx: 1.2.1
+      draft-js: 0.11.7(react-dom@18.2.0)(react@18.2.0)
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+    dev: false
+
+  /@draft-js-plugins/editor@4.1.4(draft-js@0.11.7)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-NlE1AIsPPfmdn+JIwwmcAm18FgwJ9/A55+2VXf3US3PmITJVL+y9VORCwLbGh2sb0RXvgFOIbqs8pPAOe8F8WQ==}
+    peerDependencies:
+      draft-js: ^0.11.0
+      react: ^16.8.0 || ^17.0.0 || >=18.0.0
+      react-dom: ^16.8.0 || ^17.0.0 || >=18.0.0
+    dependencies:
+      draft-js: 0.11.7(react-dom@18.2.0)(react@18.2.0)
+      immutable: 3.7.6
+      prop-types: 15.8.1
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+    dev: false
+
+  /@draft-js-plugins/static-toolbar@4.1.4(draft-js@0.11.7)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-HQoVEozCPFX7uyVCFa6LrrWMC/vP6ZnEUjXiLryJJEPsqtgkbMCABB0FCpbq/BLNSXpoUup4dhYT+PatmjiDuw==}
+    peerDependencies:
+      draft-js: ^0.10.1 || ^0.11.0
+      react: ^16.8.0 || ^17.0.0 || >=18.0.0
+      react-dom: ^16.8.0 || ^17.0.0 || >=18.0.0
+    dependencies:
+      '@draft-js-plugins/buttons': 4.3.3(draft-js@0.11.7)(react-dom@18.2.0)(react@18.2.0)
+      '@draft-js-plugins/utils': 4.2.1(draft-js@0.11.7)
+      draft-js: 0.11.7(react-dom@18.2.0)(react@18.2.0)
+      prop-types: 15.8.1
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+    dev: false
+
+  /@draft-js-plugins/utils@4.2.1(draft-js@0.11.7):
+    resolution: {integrity: sha512-FtGtBM+zSPgwaaAujULi0eCixlOBsqRezhOcZvBi3y0A/LkvNtKhykEOzd9/96qnGVT54iMiOJb+hw62yk/CCw==}
+    peerDependencies:
+      draft-js: ^0.10.1 || ^0.11.0
+    dependencies:
+      draft-js: 0.11.7(react-dom@18.2.0)(react@18.2.0)
+    dev: false
 
   /@esbuild/android-arm64@0.18.20:
     resolution: {integrity: sha512-Nz4rJcchGDtENV0eMKUNa6L12zz2zBDXuhj/Vjh18zGqB44Bi7MBMSXjgunJgjRhCmKOjnPuZp4Mb6OKqtMHLQ==}
@@ -1370,6 +1429,11 @@ packages:
     requiresBuild: true
     dev: true
     optional: true
+
+  /clsx@1.2.1:
+    resolution: {integrity: sha512-EcR6r5a8bj6pu3ycsa/E/cKVGuTgZJZdsyUYHOksG/UHIiKfjxzRxYJpyVBwYaQeOvghal9fcc4PidlgzugAQg==}
+    engines: {node: '>=6'}
+    dev: false
 
   /color-convert@1.9.3:
     resolution: {integrity: sha512-QfAUtd+vFdAtFQcC8CCyYt1fYWxSqAiK2cSD6zDB8N3cpsEBAvRxp9zOGg6G/SHHJYAT88/az/IuDGALsNVbGg==}
@@ -2428,6 +2492,14 @@ packages:
       asap: 2.0.6
     dev: false
 
+  /prop-types@15.8.1:
+    resolution: {integrity: sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==}
+    dependencies:
+      loose-envify: 1.4.0
+      object-assign: 4.1.1
+      react-is: 16.13.1
+    dev: false
+
   /punycode@2.3.1:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
@@ -2445,6 +2517,10 @@ packages:
       loose-envify: 1.4.0
       react: 18.2.0
       scheduler: 0.23.0
+    dev: false
+
+  /react-is@16.13.1:
+    resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
     dev: false
 
   /react-jwt@1.2.0(react@18.2.0):

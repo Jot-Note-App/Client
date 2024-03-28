@@ -15,12 +15,28 @@ import { UserContext } from '../components/UserContextProvider';
 import { MainPanelCreateJournalMutation$data } from '../__generated__/MainPanelCreateJournalMutation.graphql';
 import AddCircleIcon from '../icons/AddCircleIcon';
 import { MainPanelCreateEntryMutation, MainPanelCreateEntryMutation$data } from '../__generated__/MainPanelCreateEntryMutation.graphql';
-import { ContentBlock, ContentState, Editor, EditorState, Modifier, RichUtils, convertFromRaw, convertToRaw, getDefaultKeyBinding } from 'draft-js';
+import { ContentBlock, ContentState, EditorState, Modifier, RichUtils, convertFromRaw, convertToRaw, getDefaultKeyBinding } from 'draft-js';
+import Editor from '@draft-js-plugins/editor';
+import createToolbarPlugin, { Separator } from '@draft-js-plugins/static-toolbar';
 import SaveIcon from '../icons/SaveIcon';
 import { MainPanelEntryEditorQuery, MainPanelEntryEditorQuery$data } from '../__generated__/MainPanelEntryEditorQuery.graphql';
 import { convertStringToEditorState, getPlainTextFromEditorState, handleEditorKeyCommand } from '../utils/editor';
 import { convertTimeStringtoFormattedDateString } from '../utils/utils';
+import {
+    ItalicButton,
+    BoldButton,
+    UnderlineButton,
+    CodeButton,
+    HeadlineOneButton,
+    HeadlineTwoButton,
+    HeadlineThreeButton,
+    UnorderedListButton,
+    OrderedListButton,
+    BlockquoteButton,
+    CodeBlockButton,
+} from '@draft-js-plugins/buttons';
 import 'draft-js/dist/Draft.css';
+import '@draft-js-plugins/static-toolbar/lib/plugin.css'
 interface MainPanelProps {
     selectedTab: MainPanelTab;
 }
@@ -410,6 +426,19 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
     const [editorState, setEditorState] = useState(convertStringToEditorState(content));
     const editorRef = useRef<Editor | null>(null);
     const timerRef = useRef<number | null>(null);
+    // const toolbarPlugin = createToolbarPlugin();
+    // const { Toolbar } = toolbarPlugin;
+    const [{ plugins, Toolbar }] = useState(() => {
+        const toolbarPlugin = createToolbarPlugin();
+        const { Toolbar } = toolbarPlugin;
+        const plugins = [toolbarPlugin];
+        return {
+            plugins,
+            Toolbar
+        };
+    });
+
+
 
     const clearTimer = useCallback((timer: React.MutableRefObject<number | null>) => {
         if (timer.current) {
@@ -512,7 +541,33 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
                                         autoCapitalize='on'
                                         placeholder='Start typing here ...'
                                         keyBindingFn={keyBindingFn}
+                                        plugins={plugins}
                                     />
+                                    <div className='flex justify-center'>
+                                        <div className="absolute bottom-10 z-10">
+                                            <Toolbar >
+                                                {
+                                                    (externalProps) => (
+                                                        <>
+                                                            <BoldButton {...externalProps} />
+                                                            <ItalicButton {...externalProps} />
+                                                            <UnderlineButton {...externalProps} />
+                                                            <CodeButton {...externalProps} />
+                                                            <Separator />
+                                                            <HeadlineOneButton {...externalProps} />
+                                                            <HeadlineTwoButton {...externalProps} />
+                                                            <HeadlineThreeButton {...externalProps} />
+                                                            <Separator />
+                                                            <UnorderedListButton {...externalProps} />
+                                                            <OrderedListButton {...externalProps} />
+                                                        </>
+
+                                                    )
+                                                }
+                                            </Toolbar>
+
+                                        </div>
+                                    </div>
                                 </div>
                                 <div className='h-10' />
                             </div>
@@ -523,6 +578,19 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
         </div >
     )
 };
+
+interface EditorToolbarProps {
+    editorState: EditorState;
+    onEditorStateChange: (editorState: EditorState) => void;
+}
+
+const EditorToolbar: React.FC<EditorToolbarProps> = ({ }) => {
+    return (
+        <div className="border border-mediumGray flex items-center">
+
+        </div>
+    );
+}
 
 const mainPanelQuery = graphql`
 query MainPanelQuery($after: ID, $journalId: ID, $search: String){
