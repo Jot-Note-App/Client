@@ -18,6 +18,7 @@ import { MainPanelCreateEntryMutation, MainPanelCreateEntryMutation$data } from 
 import { ContentBlock, ContentState, EditorState, Modifier, RichUtils, convertFromRaw, convertToRaw, getDefaultKeyBinding } from 'draft-js';
 import Editor from '@draft-js-plugins/editor';
 import createToolbarPlugin, { Separator } from '@draft-js-plugins/static-toolbar';
+import createLinkifyPlugin from '@draft-js-plugins/linkify';
 import SaveIcon from '../icons/SaveIcon';
 import { MainPanelEntryEditorQuery, MainPanelEntryEditorQuery$data } from '../__generated__/MainPanelEntryEditorQuery.graphql';
 import { convertStringToEditorState, getPlainTextFromEditorState, handleEditorKeyCommand } from '../utils/editor';
@@ -32,11 +33,9 @@ import {
     HeadlineThreeButton,
     UnorderedListButton,
     OrderedListButton,
-    BlockquoteButton,
-    CodeBlockButton,
 } from '@draft-js-plugins/buttons';
 import 'draft-js/dist/Draft.css';
-import '@draft-js-plugins/static-toolbar/lib/plugin.css'
+import "@draft-js-plugins/linkify/lib/plugin.css";
 interface MainPanelProps {
     selectedTab: MainPanelTab;
 }
@@ -429,9 +428,10 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
     // const toolbarPlugin = createToolbarPlugin();
     // const { Toolbar } = toolbarPlugin;
     const [{ plugins, Toolbar }] = useState(() => {
+        const linkifyPlugin = createLinkifyPlugin();
         const toolbarPlugin = createToolbarPlugin();
         const { Toolbar } = toolbarPlugin;
-        const plugins = [toolbarPlugin];
+        const plugins = [toolbarPlugin, linkifyPlugin];
         return {
             plugins,
             Toolbar
