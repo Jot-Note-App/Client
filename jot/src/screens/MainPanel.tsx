@@ -533,7 +533,7 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
                             </div>
                         </div>
                         <div className='overflow-y-scroll flex justify-center text-body'>
-                            <div className="w-9/12 h-full hover:cursor-text"
+                            <div className="w-9/12 h-full max-h-full hover:cursor-text"
                                 style={{ maxWidth: '50rem' }}
                                 onClick={(e) => {
                                     if (editorRef.current) {
@@ -560,32 +560,32 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
                                         plugins={plugins}
                                     />
 
-                                    {isToolbarVisible &&
-                                        <div className='flex justify-center'>
-                                            <div className="absolute bottom-10 z-10">
-                                                <Toolbar >
-                                                    {
-                                                        (externalProps) => (
-                                                            <>
-                                                                <BoldButton {...externalProps} />
-                                                                <ItalicButton {...externalProps} />
-                                                                <UnderlineButton {...externalProps} />
-                                                                <CodeButton {...externalProps} />
-                                                                <Separator />
-                                                                <HeadlineOneButton {...externalProps} />
-                                                                <HeadlineTwoButton {...externalProps} />
-                                                                <HeadlineThreeButton {...externalProps} />
-                                                                <Separator />
-                                                                <UnorderedListButton {...externalProps} />
-                                                                <OrderedListButton {...externalProps} />
-                                                            </>
 
-                                                        )
-                                                    }
-                                                </Toolbar>
+                                    <div className='flex justify-center'>
+                                        <div className={`fixed z-10 transition-transform duration-300 bottom-10  ${isToolbarVisible ? 'translate-y-0' : 'translate-y-20'}`}>
+                                            <Toolbar >
+                                                {
+                                                    (externalProps) => (
+                                                        <>
+                                                            <BoldButton {...externalProps} />
+                                                            <ItalicButton {...externalProps} />
+                                                            <UnderlineButton {...externalProps} />
+                                                            <CodeButton {...externalProps} />
+                                                            <Separator />
+                                                            <HeadlineOneButton {...externalProps} />
+                                                            <HeadlineTwoButton {...externalProps} />
+                                                            <HeadlineThreeButton {...externalProps} />
+                                                            <Separator />
+                                                            <UnorderedListButton {...externalProps} />
+                                                            <OrderedListButton {...externalProps} />
+                                                        </>
 
-                                            </div>
-                                        </div>}
+                                                    )
+                                                }
+                                            </Toolbar>
+
+                                        </div>
+                                    </div>
                                 </div>
                                 <div className='h-10' />
                             </div>
