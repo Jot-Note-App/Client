@@ -49,7 +49,7 @@
 
 .bc4rxid:hover,
 .bc4rxid:focus {
-  @apply bg-lightGray outline-0;
+  @apply bg-lightGray;
 }
 
 .bc4rxid svg {
