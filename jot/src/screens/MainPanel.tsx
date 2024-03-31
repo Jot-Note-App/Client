@@ -597,19 +597,6 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
     )
 };
 
-interface EditorToolbarProps {
-    editorState: EditorState;
-    onEditorStateChange: (editorState: EditorState) => void;
-}
-
-const EditorToolbar: React.FC<EditorToolbarProps> = ({ }) => {
-    return (
-        <div className="border border-mediumGray flex items-center">
-
-        </div>
-    );
-}
-
 const mainPanelQuery = graphql`
 query MainPanelQuery($after: ID, $journalId: ID, $search: String){
   user {
