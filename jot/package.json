@@ -12,10 +12,15 @@
     "relay": "relay-compiler --watch"
   },
   "dependencies": {
+    "@draft-js-plugins/buttons": "^4.3.3",
+    "@draft-js-plugins/editor": "^4.1.4",
+    "@draft-js-plugins/linkify": "^4.2.2",
+    "@draft-js-plugins/static-toolbar": "^4.1.4",
     "@floating-ui/react": "^0.26.9",
     "@react-oauth/google": "^0.11.1",
     "@types/draft-js": "^0.11.18",
     "draft-js": "^0.11.7",
+    "install": "^0.13.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-jwt": "^1.2.0",

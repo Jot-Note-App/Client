@@ -15,12 +15,27 @@ import { UserContext } from '../components/UserContextProvider';
 import { MainPanelCreateJournalMutation$data } from '../__generated__/MainPanelCreateJournalMutation.graphql';
 import AddCircleIcon from '../icons/AddCircleIcon';
 import { MainPanelCreateEntryMutation, MainPanelCreateEntryMutation$data } from '../__generated__/MainPanelCreateEntryMutation.graphql';
-import { ContentBlock, ContentState, Editor, EditorState, Modifier, RichUtils, convertFromRaw, convertToRaw, getDefaultKeyBinding } from 'draft-js';
+import { ContentBlock, ContentState, EditorState, Modifier, RichUtils, convertFromRaw, convertToRaw, getDefaultKeyBinding } from 'draft-js';
+import Editor from '@draft-js-plugins/editor';
+import createToolbarPlugin, { Separator } from '@draft-js-plugins/static-toolbar';
+import createLinkifyPlugin from '@draft-js-plugins/linkify';
 import SaveIcon from '../icons/SaveIcon';
 import { MainPanelEntryEditorQuery, MainPanelEntryEditorQuery$data } from '../__generated__/MainPanelEntryEditorQuery.graphql';
 import { convertStringToEditorState, getPlainTextFromEditorState, handleEditorKeyCommand } from '../utils/editor';
 import { convertTimeStringtoFormattedDateString } from '../utils/utils';
+import {
+    ItalicButton,
+    BoldButton,
+    UnderlineButton,
+    CodeButton,
+    HeadlineOneButton,
+    HeadlineTwoButton,
+    HeadlineThreeButton,
+    UnorderedListButton,
+    OrderedListButton,
+} from '@draft-js-plugins/buttons';
 import 'draft-js/dist/Draft.css';
+import "@draft-js-plugins/linkify/lib/plugin.css";
 interface MainPanelProps {
     selectedTab: MainPanelTab;
 }
@@ -409,7 +424,37 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
     const content = data.node?.__typename == 'Entry' ? data.node.content : '';
     const [editorState, setEditorState] = useState(convertStringToEditorState(content));
     const editorRef = useRef<Editor | null>(null);
+    const editorContainerRef = useRef<HTMLDivElement | null>(null);
     const timerRef = useRef<number | null>(null);
+    const [isToolbarVisible, setIsToolbarVisible] = useState(false)
+    const [{ plugins, Toolbar }] = useState(() => {
+        const linkifyPlugin = createLinkifyPlugin();
+        const toolbarPlugin = createToolbarPlugin();
+        const { Toolbar } = toolbarPlugin;
+        const plugins = [toolbarPlugin, linkifyPlugin];
+        return {
+            plugins,
+            Toolbar
+        };
+    });
+
+    useEffect(() => {
+        const handleFocusEvent = () => setIsToolbarVisible(true);
+        const handleBlurEvent = () => setIsToolbarVisible(false);
+
+        const editorContainer = editorContainerRef.current;
+        if (editorContainer) {
+            editorContainer.addEventListener('focus', handleFocusEvent, true);
+            editorContainer.addEventListener('blur', handleBlurEvent, true);
+        }
+
+        return () => {
+            if (editorContainer) {
+                editorContainer.removeEventListener('focus', handleFocusEvent, true);
+                editorContainer.removeEventListener('blur', handleBlurEvent, true);
+            }
+        };
+    }, []);
 
     const clearTimer = useCallback((timer: React.MutableRefObject<number | null>) => {
         if (timer.current) {
@@ -488,7 +533,7 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
                             </div>
                         </div>
                         <div className='overflow-y-scroll flex justify-center text-body'>
-                            <div className="w-9/12 h-full hover:cursor-text"
+                            <div className="w-9/12 h-full max-h-full hover:cursor-text"
                                 style={{ maxWidth: '50rem' }}
                                 onClick={(e) => {
                                     if (editorRef.current) {
@@ -499,7 +544,7 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
                                     e.stopPropagation();
                                 }}>
                                 <div className='h-10 hover:cursor-default' onClick={e => e.stopPropagation()} />
-                                <div onClick={e => e.stopPropagation()}>
+                                <div ref={editorContainerRef} onClick={e => e.stopPropagation()}>
                                     <Editor
                                         ref={editorRef}
                                         editorState={editorState}
@@ -512,7 +557,35 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
                                         autoCapitalize='on'
                                         placeholder='Start typing here ...'
                                         keyBindingFn={keyBindingFn}
+                                        plugins={plugins}
                                     />
+
+
+                                    <div className='flex justify-center'>
+                                        <div className={`fixed z-10 transition-transform duration-300 bottom-10  ${isToolbarVisible ? 'translate-y-0' : 'translate-y-20'}`}>
+                                            <Toolbar >
+                                                {
+                                                    (externalProps) => (
+                                                        <>
+                                                            <BoldButton {...externalProps} />
+                                                            <ItalicButton {...externalProps} />
+                                                            <UnderlineButton {...externalProps} />
+                                                            <CodeButton {...externalProps} />
+                                                            <Separator />
+                                                            <HeadlineOneButton {...externalProps} />
+                                                            <HeadlineTwoButton {...externalProps} />
+                                                            <HeadlineThreeButton {...externalProps} />
+                                                            <Separator />
+                                                            <UnorderedListButton {...externalProps} />
+                                                            <OrderedListButton {...externalProps} />
+                                                        </>
+
+                                                    )
+                                                }
+                                            </Toolbar>
+
+                                        </div>
+                                    </div>
                                 </div>
                                 <div className='h-10' />
                             </div>
