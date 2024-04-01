@@ -27,6 +27,7 @@ export default {
         h3: ["32px", { lineHeight: "37px", fontWeight: "700" }],
         h4: ["24px", { lineHeight: "35px", fontWeight: "700" }],
         h5: ["20px", { lineHeight: "30px", fontWeight: "700" }],
+        title: ["35px", { lineHeight: "40px", fontWeight: "700" }],
         subheading: ["17px", { lineHeight: "28px", fontWeight: "700" }],
         large: ["16px", { lineHeight: "24px", fontWeight: "400" }],
         regular: ["14px", { lineHeight: "24px", fontWeight: "400" }],

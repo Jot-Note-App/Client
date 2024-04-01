@@ -297,7 +297,7 @@ const EntryRow: React.FC<EntryRowProps> = ({ fragment, onSelect, selectedEntryId
         >
             <div className="grid grid-flow-col justify-between items-center">
                 <div className={`text-regular font-semibold truncate ${!data.title && "text-darkGray"}`}>
-                    {data.title ? data.title : "Untitled note"}
+                    {data.title ? data.title : "Untitled"}
                 </div>
                 <div className="text-small text-darkGray">{convertTimeStringtoFormattedDateString(data.createdAt)}</div>
             </div>
@@ -421,10 +421,13 @@ interface EntryEditorProps {
 const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
     const data = useLazyLoadQuery(mainPanelEntryEditorQuery, { entryId: entryId }) as MainPanelEntryEditorQuery$data;
     const [updateEntry, _isUpdatingEntry] = useMutation(mainPanelUpdateEntryMutation);
+    const defaultTitle = data.node?.__typename == 'Entry' ? data.node.title || null : null
+    const [title, setTitle] = useState(defaultTitle);
     const content = data.node?.__typename == 'Entry' ? data.node.content : '';
     const [editorState, setEditorState] = useState(convertStringToEditorState(content));
     const editorRef = useRef<Editor | null>(null);
     const editorContainerRef = useRef<HTMLDivElement | null>(null);
+    const titleRef = useRef<HTMLInputElement | null>(null);
     const timerRef = useRef<number | null>(null);
     const [isToolbarVisible, setIsToolbarVisible] = useState(false)
     const [{ plugins, Toolbar }] = useState(() => {
@@ -438,23 +441,55 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
         };
     });
 
-    useEffect(() => {
-        const handleFocusEvent = () => setIsToolbarVisible(true);
-        const handleBlurEvent = () => setIsToolbarVisible(false);
-
-        const editorContainer = editorContainerRef.current;
-        if (editorContainer) {
-            editorContainer.addEventListener('focus', handleFocusEvent, true);
-            editorContainer.addEventListener('blur', handleBlurEvent, true);
+    const saveEditorState = useCallback(() => {
+        const contentState = editorState.getCurrentContent();
+        const contentStateString = JSON.stringify(convertToRaw(contentState));
+        if (data.node?.__typename != 'Entry' || data.node.title == title && data.node.content == contentStateString) {
+            return
         }
+        console.log("Saving...")
+        updateEntry({
+            variables: {
+                entryId: entryId,
+                content: contentStateString,
+                title: title,
+            },
+        })
+    }, [title, editorState, entryId, data.node])
 
-        return () => {
-            if (editorContainer) {
-                editorContainer.removeEventListener('focus', handleFocusEvent, true);
-                editorContainer.removeEventListener('blur', handleBlurEvent, true);
+    useEffect(
+        function handleTitleFocusAndBlur() {
+            const handleBlurEvent = () => saveEditorState();
+            const titleElement = titleRef.current;
+            if (titleElement) {
+                titleElement.addEventListener('blur', handleBlurEvent, true);
             }
-        };
-    }, []);
+            return () => {
+                if (titleElement) {
+                    titleElement.removeEventListener('blur', handleBlurEvent, true);
+                }
+            };
+        }, [saveEditorState, titleRef]);
+
+    useEffect(
+        function handleEditorFocusAndBlur() {
+            const handleFocusEvent = () => setIsToolbarVisible(true);
+            const handleBlurEvent = () => {
+                setIsToolbarVisible(false)
+                saveEditorState()
+            };
+            const editorContainer = editorContainerRef.current;
+            if (editorContainer) {
+                editorContainer.addEventListener('focus', handleFocusEvent, true);
+                editorContainer.addEventListener('blur', handleBlurEvent, true);
+            }
+            return () => {
+                if (editorContainer) {
+                    editorContainer.removeEventListener('focus', handleFocusEvent, true);
+                    editorContainer.removeEventListener('blur', handleBlurEvent, true);
+                }
+            };
+        }, [saveEditorState]);
 
     const clearTimer = useCallback((timer: React.MutableRefObject<number | null>) => {
         if (timer.current) {
@@ -463,25 +498,33 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
         }
     }, [])
 
-    useEffect(() => {
-        clearTimer(timerRef)
-        if (data.node && data.node?.__typename == 'Entry') {
-            const editorState = convertStringToEditorState(data.node.content)
-            setEditorState(editorState);
-        }
-    }, [entryId])
+    useEffect(
+        function updateEditorOnEntryChange() {
+            clearTimer(timerRef)
+            if (data.node && data.node?.__typename == 'Entry') {
+                setTitle(data.node.title || null)
+                setEditorState(convertStringToEditorState(data.node.content));
+                if (!data.node.title) {
+                    titleRef.current?.focus();
+                }
+            }
+        }, [entryId])
 
+    const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        clearTimer(timerRef)
+        setTitle(e.target.value);
+    }, [timerRef])
 
     const handleEditorStateChange = useCallback((editorState: EditorState) => {
         if (data.node) {
             clearTimer(timerRef)
             const timer = setTimeout(() => {
-                saveEditorState(editorState);
-            }, 5000);
+                saveEditorState();
+            }, 3000);
             timerRef.current = timer;
         }
         setEditorState(editorState);
-    }, [data, timerRef]);
+    }, [data, timerRef, saveEditorState]);
 
     const handleKeyCommand = useCallback((command: string, editorState: EditorState) => {
         const newState = RichUtils.handleKeyCommand(editorState, command);
@@ -501,16 +544,6 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
         [editorState]
     );
 
-    const saveEditorState = useCallback((editorState: EditorState) => {
-        const contentState = editorState.getCurrentContent();
-        const contentStateString = JSON.stringify(convertToRaw(contentState));
-        updateEntry({
-            variables: {
-                entryId: entryId,
-                content: contentStateString,
-            },
-        })
-    }, [entryId])
 
     return (
         <div className="w-full h-full flex justify-center">
@@ -523,11 +556,11 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
                                 <div >Created: {convertTimeStringtoFormattedDateString(data.node.createdAt, true)}</div>
                             </div>
                             <div className="text-center">
-                                {data.node.journal.name} / <span className='text-offBlack'>{data.node.title || "Untitled note"} </span>
+                                {data.node.journal.name} / <span className='text-offBlack'>{data.node.title || "Untitled"} </span>
                             </div>
                             <div className="flex justify-end items-center">
                                 {/* TODO: replace SaveIcon with loading indicator when saving*/}
-                                <div className="hover:text-main hover:cursor-pointer p-3" onClick={() => saveEditorState(editorState)}>
+                                <div className="hover:text-main hover:cursor-pointer p-3" onClick={() => saveEditorState()}>
                                     <SaveIcon />
                                 </div>
                             </div>
@@ -544,6 +577,21 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
                                     e.stopPropagation();
                                 }}>
                                 <div className='h-10 hover:cursor-default' onClick={e => e.stopPropagation()} />
+                                <form onSubmit={e => {
+                                    e.preventDefault();
+                                    if (editorRef.current) {
+                                        editorRef.current.focus();
+                                    }
+                                    e.stopPropagation()
+                                }}>
+                                    <input ref={titleRef}
+                                        className={`appearance-none border-none focus:outline-none text-title w-full pb-2 ${title ? "text-black" : "text-darkGray"} `}
+                                        placeholder={"Untitled"}
+                                        onClick={e => e.stopPropagation()}
+                                        onChange={handleTitleChange}
+                                        value={title || ''}
+                                    />
+                                </form>
                                 <div ref={editorContainerRef} onClick={e => e.stopPropagation()}>
                                     <Editor
                                         ref={editorRef}
@@ -587,7 +635,7 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
                                         </div>
                                     </div>
                                 </div>
-                                <div className='h-10' />
+                                <div className='h-24' />
                             </div>
                         </div>
                     </div> :
