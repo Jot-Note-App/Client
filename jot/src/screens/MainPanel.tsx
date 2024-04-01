@@ -447,7 +447,6 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
         if (data.node?.__typename != 'Entry' || data.node.title == title && data.node.content == contentStateString) {
             return
         }
-        console.log("Saving...")
         updateEntry({
             variables: {
                 entryId: entryId,
