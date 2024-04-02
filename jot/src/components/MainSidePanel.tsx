@@ -36,13 +36,13 @@ interface MainSidePanelProps {
 
 const MainSidePanel: React.FC<MainSidePanelProps> = ({ onLogoutCallback, selectedTab, setSelectedTab }) => {
     return (
-        <div className=" bg-main min-h-screen px-4 py-6 grid grid-flow-row content-between justify-items-center">
+        <div className=" bg-main min-h-screen px-3 py-6 grid grid-flow-row content-between justify-items-center">
             <div>
                 <div className="justify-center">
                     <UserProfileInfo hideDetails={true} />
                 </div>
                 <div className="mt-4">
-                    <div className={"bg-mainDark rounded p-4 hover:cursor-pointer text-secondary"}>
+                    <div className={"bg-mainDark rounded p-2 hover:cursor-pointer text-secondary"}>
                         <div className="flex gap-2 items-center justify-center">
                             <BookIcon />
                         </div>
@@ -52,7 +52,7 @@ const MainSidePanel: React.FC<MainSidePanelProps> = ({ onLogoutCallback, selecte
 
             <div>
                 <GoogleLogout onLogoutCallback={onLogoutCallback}>
-                    <div className={"hover:bg-mainDark rounded p-4 hover:cursor-pointer text-white hover:text-secondary"}>
+                    <div className={"hover:bg-mainDark transition-colors duration-200 rounded p-2 hover:cursor-pointer text-white hover:text-secondary"}>
                         <div className="flex gap-2 items-center justify-center">
                             <LogoutIcon />
                         </div>
