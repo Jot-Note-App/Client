@@ -12,6 +12,12 @@ type CreateJournalMutationSuccess {
 type CreateUserSuccess {
   user: User!
 }
+type DeleteEntryMutationSuccess {
+  entry: Entry!
+}
+type DeleteJournalMutationSuccess {
+  journal: Journal!
+}
 type DeleteMutationSuccess {
   success: Boolean!
 }
@@ -95,10 +101,10 @@ type Mutation {
   deleteUser(id: ID!): DeleteUserResponse!
   createJournal(input: CreateJournalInput!): CreateJournalMutationResponse!
   updateJournal(id: ID!, input: UpdateJournalInput!): JournalMutationResponse!
-  deleteJournal(id: ID!): DeleteMutationResponse!
+  deleteJournal(id: ID!): DeleteJournalMutationResponse!
   createEntry(input: CreateEntryInput!): CreateEntryMutationResponse!
   updateEntry(id: ID!, input: UpdateEntryInput!): EntryMutationResponse!
-  deleteEntry(id: ID!): DeleteMutationResponse!
+  deleteEntry(id: ID!): DeleteEntryMutationResponse!
   loginOrSignUpWithGoogle(credentials: String!): LoginResponse!
   logout: LogoutResponse!
 }
@@ -136,6 +142,8 @@ interface Node {
 union CreateEntryMutationResponse = CreateEntryMutationSuccess | MutationFailure
 union CreateJournalMutationResponse = CreateJournalMutationSuccess | MutationFailure
 union CreateUserResponse = CreateUserSuccess | MutationFailure
+union DeleteEntryMutationResponse = DeleteEntryMutationSuccess | MutationFailure
+union DeleteJournalMutationResponse = DeleteJournalMutationSuccess | MutationFailure
 union DeleteMutationResponse = DeleteMutationSuccess | MutationFailure
 union DeleteUserResponse = DeleteUserSuccess | MutationFailure
 union EntryMutationResponse = EntryMutationSuccess | MutationFailure
@@ -173,6 +181,7 @@ input UpdateUserInput {
 }
 "The @defer directive may be specified on a fragment spread to imply de-prioritization, that causes the fragment to be omitted in the initial response, and delivered as a subsequent response afterward. A query with @defer directive will cause the request to potentially return multiple responses, where non-deferred data is delivered in the initial response and data deferred delivered in a subsequent response. @include and @skip take precedence over @defer."
 directive @defer(if: Boolean = true, label: String) on FRAGMENT_SPREAD | INLINE_FRAGMENT
+directive @goField(forceResolver: Boolean, name: String, omittable: Boolean) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
 "The @specifiedBy built-in directive is used within the type system definition language to provide a scalar specification URL for specifying the behavior of custom scalar types."
 directive @specifiedBy(url: String!) on SCALAR
 

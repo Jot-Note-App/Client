@@ -36,6 +36,8 @@ import {
 } from '@draft-js-plugins/buttons';
 import 'draft-js/dist/Draft.css';
 import "@draft-js-plugins/linkify/lib/plugin.css";
+import DeleteEntryModal from '../components/screens/journals/DeleteEntryModal';
+import TrashIcon from '../icons/TrashIcon';
 interface MainPanelProps {
     selectedTab: MainPanelTab;
 }
@@ -351,19 +353,32 @@ const EntriesFeed: React.FC<EntriesFeedProps> = ({ fragment, onSelectEntry, onEm
         entriesFeedFragment,
         fragment,
     ) as MainPanelEntriesFeedFragment$data
-    // Select the first entry by default when a new journal is selected
-    useEffect(() => {
+    const selectFirstEntry = useCallback(() => {
         const entryId = data.entriesFeedJournals?.edges[0]?.node.entries?.edges[0]?.node.id
         if (entryId) {
             onSelectEntry(entryId)
         }
-    }, [selectedJournalId])
-
-    useEffect(() => {
-        if (data.entriesFeedJournals?.edges[0]?.node.entries?.edges.length == 0) {
-            onEmptyFeed()
-        }
     }, [data.entriesFeedJournals])
+
+
+    useEffect(
+        function handleJournalChange() {
+            selectFirstEntry()
+        }, [selectedJournalId])
+
+    useEffect(
+        function handleNullEntry() {
+            if (selectedEntryId == null) {
+                selectFirstEntry()
+            }
+        }, [selectedEntryId])
+
+    useEffect(
+        function handleEmptyFeed() {
+            if (data.entriesFeedJournals?.edges[0]?.node.entries?.edges.length == 0) {
+                onEmptyFeed()
+            }
+        }, [data.entriesFeedJournals])
 
     return (
         <div className="w-full bg-white overflow-auto">
@@ -416,9 +431,10 @@ query MainPanelEntryEditorQuery($entryId: ID!){
 `
 interface EntryEditorProps {
     entryId: string;
+    onEntryDeleted: () => void;
 }
 
-const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
+const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) => {
     const data = useLazyLoadQuery(mainPanelEntryEditorQuery, { entryId: entryId }) as MainPanelEntryEditorQuery$data;
     const [updateEntry, _isUpdatingEntry] = useMutation(mainPanelUpdateEntryMutation);
     const defaultTitle = data.node?.__typename == 'Entry' ? data.node.title || null : null
@@ -430,6 +446,9 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
     const titleRef = useRef<HTMLInputElement | null>(null);
     const timerRef = useRef<number | null>(null);
     const [isToolbarVisible, setIsToolbarVisible] = useState(false)
+    const [isDeleteEntryModalOpen, setIsDeleteEntryModalOpen] = useState(false);
+    const journalId = data.node?.__typename == 'Entry' ? data.node?.journal.id : ''
+    const journalEntriesConnectionId = ConnectionHandler.getConnectionID(journalId, 'MainPanelEntriesFeedFragment_entries')
     const [{ plugins, Toolbar }] = useState(() => {
         const linkifyPlugin = createLinkifyPlugin();
         const toolbarPlugin = createToolbarPlugin();
@@ -562,6 +581,9 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
                                 <div className="hover:text-main hover:cursor-pointer p-3" onClick={() => saveEditorState()}>
                                     <SaveIcon />
                                 </div>
+                                <div className="hover:text-main hover:cursor-pointer p-3" onClick={() => setIsDeleteEntryModalOpen(true)}>
+                                    <TrashIcon />
+                                </div>
                             </div>
                         </div>
                         <div className='overflow-y-scroll flex justify-center text-body'>
@@ -626,7 +648,6 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
                                                             <UnorderedListButton {...externalProps} />
                                                             <OrderedListButton {...externalProps} />
                                                         </>
-
                                                     )
                                                 }
                                             </Toolbar>
@@ -637,6 +658,12 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId }) => {
                                 <div className='h-24' />
                             </div>
                         </div>
+                        <DeleteEntryModal entryId={entryId}
+                            isOpen={isDeleteEntryModalOpen}
+                            onClose={() => setIsDeleteEntryModalOpen(false)}
+                            onSuccessfulDelete={onEntryDeleted}
+                            connectionId={journalEntriesConnectionId}
+                        />
                     </div> :
                     <div className='grid min-w-full'>Loading...</div>
             }
@@ -676,6 +703,10 @@ const MainPanel: React.FC<MainPanelProps> = ({ selectedTab }) => {
         setCurrEntryId(entryId)
     }, [])
 
+    const onEntryDeleted = useCallback(() => {
+        setCurrEntryId(null)
+    }, [])
+
     return (
         <div className="w-full flex">
             <div className="h-screen grid grid-flow-row w-72 border-x border-mediumGray" style={{ gridTemplateRows: 'auto auto 1fr', minWidth: '18rem' }}>
@@ -689,7 +720,7 @@ const MainPanel: React.FC<MainPanelProps> = ({ selectedTab }) => {
             {
                 currEntryId ?
                     <Suspense fallback={<div>Loading...</div>}>
-                        <EntryEditor entryId={currEntryId} />
+                        <EntryEditor entryId={currEntryId} onEntryDeleted={onEntryDeleted} />
                     </Suspense>
                     : !isFeedEmpty ?
                         <div>Loading...</div>

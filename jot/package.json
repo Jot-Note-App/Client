@@ -25,6 +25,7 @@
     "react-dom": "^18.2.0",
     "react-jwt": "^1.2.0",
     "react-relay": "16.0.0",
+    "reactjs-popup": "^2.0.6",
     "relay-runtime": "16.0.0"
   },
   "devDependencies": {
