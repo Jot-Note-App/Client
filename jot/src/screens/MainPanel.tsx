@@ -369,6 +369,7 @@ const EntriesFeed: React.FC<EntriesFeedProps> = ({ fragment, onSelectEntry, onEm
     useEffect(
         function handleNullEntry() {
             if (selectedEntryId == null) {
+                //TODO: potentially get next entry as opposed to the first
                 selectFirstEntry()
             }
         }, [selectedEntryId])
