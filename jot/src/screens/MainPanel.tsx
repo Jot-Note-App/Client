@@ -38,6 +38,7 @@ import 'draft-js/dist/Draft.css';
 import "@draft-js-plugins/linkify/lib/plugin.css";
 import DeleteEntryModal from '../components/screens/journals/DeleteEntryModal';
 import TrashIcon from '../icons/TrashIcon';
+import JournalSelectorActionMenu from '../components/screens/journals/JournalSelectorActionMenu';
 interface MainPanelProps {
     selectedTab: MainPanelTab;
 }
@@ -165,9 +166,12 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect })
     }, []);
     return (
         <div className="w-full">
-            <div className="p-2 flex justify-between items-center hover:cursor-pointer bg-lightGray border-b border-mediumGray text-subheading" ref={refs.setReference} {...getReferenceProps()} onClick={() => setIsOpen(!isOpen)}>
-                {selectedLabel}
-                <ArrowIcon orientation={isOpen ? 'up' : 'down'} />
+            <div className="grid grid-flow-col bg-lightGray border-b border-mediumGray items-center p-2" style={{ gridTemplateColumns: '1fr auto' }}>
+                <div className=" flex gap-2 items-center hover:cursor-pointer  text-subheading" ref={refs.setReference} {...getReferenceProps()} onClick={() => setIsOpen(!isOpen)}>
+                    {selectedLabel}
+                    <ArrowIcon orientation={isOpen ? 'up' : 'down'} />
+                </div>
+                <JournalSelectorActionMenu />
             </div>
             {isOpen && (
                 <div className="bg-white border border-lightGray shadow-md w-80 rounded mt-0.5" ref={refs.setFloating} style={floatingStyles} {...getFloatingProps()}>
