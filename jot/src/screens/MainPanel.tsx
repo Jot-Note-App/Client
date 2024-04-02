@@ -188,7 +188,7 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect })
 
                         }
                     </FloatingList>
-                    <div className="text-regular text-center hover:cursor-pointer hover:bg-secondary py-3 border-t border-mediumGray"
+                    <div className="text-regular text-center hover:cursor-pointer transition-colors duration-200 hover:bg-secondary py-3 border-t border-mediumGray"
                         onClick={() => {
                             const connectionId = data.journalSelectorJournals?.__id
                             createJournal({
@@ -248,7 +248,7 @@ const EntriesFeedFilters: React.FC<EntriesFeedFiltersProps> = ({ onSearchSubmit,
     return (
         <div className="grid grid-flow-col items-center gap-2 bg-faintGray border-b border-mediumGray p-6 ">
             <Search onSubmit={onSearchSubmit} placeholder='Enter to search ...' />
-            <div className="text-darkGray hover:cursor-pointer hover:text-main "
+            <div className="text-darkGray hover:cursor-pointer hover:text-main transition-colors duration-300"
                 onClick={() => {
                     if (journalId) {
                         const connectionId = ConnectionHandler.getConnectionID(journalId, 'MainPanelEntriesFeedFragment_entries')
@@ -579,10 +579,10 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
                             </div>
                             <div className="flex justify-end items-center">
                                 {/* TODO: replace SaveIcon with loading indicator when saving*/}
-                                <div className="hover:text-main hover:cursor-pointer p-3" onClick={() => saveEditorState()}>
+                                <div className="hover:text-main transition-colors duration-300 hover:cursor-pointer p-3" onClick={() => saveEditorState()}>
                                     <SaveIcon />
                                 </div>
-                                <div className="hover:text-main hover:cursor-pointer p-3" onClick={() => setIsDeleteEntryModalOpen(true)}>
+                                <div className="hover:text-main transition-colors duration-300 hover:cursor-pointer p-3" onClick={() => setIsDeleteEntryModalOpen(true)}>
                                     <TrashIcon />
                                 </div>
                             </div>
