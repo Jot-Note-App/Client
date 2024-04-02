@@ -9,6 +9,8 @@ export default {
       main: "#4C98FC",
       mainDark: "#146fe3",
       secondary: "#D6EBFF",
+      warning: "#F4805B",
+      warningDark: "#E76F3D",
       faintGray: '#F2F2F2',
       lightGray: '#E7E7E7',
       mediumGray: "#BBBBBB",
