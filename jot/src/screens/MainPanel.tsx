@@ -180,11 +180,12 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect })
 
     return (
         <div className="w-full">
-            {/* TODO: fix gridTemplateColumns style decreasing size of arrowicon when text becomes too long */}
             <div className="grid grid-flow-col bg-lightGray border-b border-mediumGray items-center p-2" style={{ gridTemplateColumns: '1fr auto' }}>
                 <div className="flex gap-2 items-center hover:cursor-pointer  text-subheading " ref={refs.setReference} {...getReferenceProps()} onClick={() => setIsOpen(!isOpen)}>
                     {selectedJournal?.node.name || ''}
-                    <ArrowIcon orientation={isOpen ? 'up' : 'down'} />
+                    <div className='min-h-6 min-w-6'>
+                        <ArrowIcon orientation={isOpen ? 'up' : 'down'} />
+                    </div>
                 </div>
                 <JournalSelectorActionMenu
                     journalId={selectedId || ''}
