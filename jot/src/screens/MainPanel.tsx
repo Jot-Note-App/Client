@@ -39,6 +39,7 @@ import "@draft-js-plugins/linkify/lib/plugin.css";
 import DeleteEntryModal from '../components/screens/journals/DeleteEntryModal';
 import TrashIcon from '../icons/TrashIcon';
 import JournalSelectorActionMenu from '../components/screens/journals/JournalSelectorActionMenu';
+import AddIcon from '../icons/AddIcon';
 interface MainPanelProps {
     selectedTab: MainPanelTab;
 }
@@ -72,6 +73,7 @@ const journalSelectorFragment = graphql`
             node {
                 id
                 name
+                ordinal
             }
         }
     }
@@ -82,15 +84,15 @@ interface JournalSelectorRowProps {
     id: string;
     isSelected: boolean;
     label: string;
-    onSelect: (id: string, label: string) => void;
+    onSelect: (id: string) => void;
 }
 
 
 const JournalSelectorRow: React.FC<JournalSelectorRowProps> = ({ id, isSelected, label, onSelect }) => {
     return (
-        <div key={id} className={`w-full text-regular hover:bg-secondary hover:cursor-pointer p-2 ${isSelected ? 'bg-secondary' : ''}`}
+        <div key={id} className={`w-full text-darkerGray text-body hover:cursor-pointer p-2 transition-colors duration-75 ${isSelected ? 'bg-secondary' : ' hover:bg-faintGray'} `}
             onClick={() => {
-                onSelect(id, label)
+                onSelect(id)
             }}>
             {label}
         </div>
@@ -99,7 +101,7 @@ const JournalSelectorRow: React.FC<JournalSelectorRowProps> = ({ id, isSelected,
 
 interface JournalSelectorProps {
     fragment: MainPanelJournalSelectorFragment$key;
-    onSelect: (journalId: string) => void;
+    onSelect: (journalId: string | null) => void;
 }
 
 const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect }) => {
@@ -111,23 +113,47 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect })
     const [createJournal, _isCreatingJournal] = useMutation(mainPanelCreateJournalMutation);
     const [isOpen, setIsOpen] = useState(false);
     const [selectedId, setSelectedId] = useState<string | null>(null);
-    const [selectedLabel, setSelectedLabel] = useState<string>('');
     const [searchTerm, setSearchTerm] = useState<string | null>(null);
     const lastJournalKey = 'lastJournalId'
-    useEffect(() => {
-        const storedLastJournalId = localStorage.getItem(lastJournalKey);
-        if (storedLastJournalId) {
-            setSelectedId(storedLastJournalId);
-            onSelect(storedLastJournalId);
-            const selectedJournal = data.journalSelectorJournals?.edges.find((edge) => edge.node.id == storedLastJournalId)
-            setSelectedLabel(selectedJournal?.node.name || 'Journals');
+    const selectedJournal = data.journalSelectorJournals?.edges.find((edge) => edge.node.id == selectedId)
+    const handleJournalSelected = useCallback((id: string | null) => {
+        setSelectedId(id)
+        onSelect(id)
+    }, [])
+    const selectFirstJournal = useCallback(() => {
+        handleJournalSelected(data.journalSelectorJournals?.edges[0].node.id || null)
+    }, [data.journalSelectorJournals])
+    useEffect(
+        function handleInitialJournalSelection() {
+            const storedLastJournalId = localStorage.getItem(lastJournalKey);
+            if (storedLastJournalId) {
+                handleJournalSelected(storedLastJournalId)
+            } else {
+                selectFirstJournal()
+            }
+        },
+        []);
+    useEffect(
+        function handleNewJournalSelected() {
+            if (selectedId) {
+                localStorage.setItem(lastJournalKey, selectedId)
+            } else {
+                localStorage.removeItem(lastJournalKey)
+            }
+        },
+        [selectedId])
+
+    const onCreateJournalComplete = useCallback((response: {}, _errors: PayloadError[] | null) => {
+        const res = response as MainPanelCreateJournalMutation$data;
+        if (res.createJournal.__typename == 'CreateJournalMutationSuccess') {
+            const newJournal = res.createJournal.journalEdge.node
+            handleJournalSelected(newJournal.id)
+            setIsOpen(false)
         }
+
     }, []);
-    useEffect(() => {
-        if (selectedId) {
-            localStorage.setItem(lastJournalKey, selectedId)
-        }
-    }, [selectedId])
+
+
     const { context, refs, floatingStyles } = useFloating({
         strategy: 'fixed',
         placement: 'bottom-start',
@@ -150,49 +176,46 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect })
         }
     }).filter(option => { return !searchTerm || searchTerm == '' || option.label.toLowerCase().includes(searchTerm.toLowerCase()) }) : [];
     const { getReferenceProps, getFloatingProps } = useInteractions([listNav, click, dismiss, role]);
-    const handleSelect = useCallback((id: string, label: string) => {
-        onSelect(id)
-        setSelectedId(id)
-        setSelectedLabel(label)
-        setIsOpen(false)
-    }, [])
-    const onCreateJournalComplete = useCallback((response: {}, _errors: PayloadError[] | null) => {
-        const res = response as MainPanelCreateJournalMutation$data;
-        if (res.createJournal.__typename == 'CreateJournalMutationSuccess') {
-            const newJournal = res.createJournal.journalEdge.node
-            handleSelect(newJournal.id, newJournal.name)
-        }
 
-    }, []);
+
     return (
         <div className="w-full">
+            {/* TODO: fix gridTemplateColumns style decreasing size of arrowicon when text becomes too long */}
             <div className="grid grid-flow-col bg-lightGray border-b border-mediumGray items-center p-2" style={{ gridTemplateColumns: '1fr auto' }}>
-                <div className=" flex gap-2 items-center hover:cursor-pointer  text-subheading" ref={refs.setReference} {...getReferenceProps()} onClick={() => setIsOpen(!isOpen)}>
-                    {selectedLabel}
+                <div className="flex gap-2 items-center hover:cursor-pointer  text-subheading " ref={refs.setReference} {...getReferenceProps()} onClick={() => setIsOpen(!isOpen)}>
+                    {selectedJournal?.node.name || ''}
                     <ArrowIcon orientation={isOpen ? 'up' : 'down'} />
                 </div>
-                <JournalSelectorActionMenu />
+                <JournalSelectorActionMenu
+                    journalId={selectedId || ''}
+                    name={selectedJournal?.node.name || ''}
+                    ordinal={selectedJournal?.node.ordinal || 0}
+                    connectionId={data.journalSelectorJournals?.__id || ''}
+                    onDelete={selectFirstJournal}
+                />
             </div>
             {isOpen && (
-                <div className="bg-white border border-lightGray shadow-md w-80 rounded mt-0.5" ref={refs.setFloating} style={floatingStyles} {...getFloatingProps()}>
+                <div className="bg-white border border-lightGray shadow-md w-80 rounded-md mt-0.5" ref={refs.setFloating} style={floatingStyles} {...getFloatingProps()}>
                     <div className="border-b border-mediumGray py-3 px-6">
                         <Search onSearchChange={setSearchTerm} />
                     </div>
                     <FloatingList elementsRef={elementsRef} labelsRef={labelsRef}>
-                        {options.length > 0 ? options.map((option) => (
-                            <JournalSelectorRow key={option.id} id={option.id} isSelected={option.id === selectedId} label={option.label} onSelect={handleSelect} />)) :
-                            <div className="grid grid-flow-row items-center justify-center text-mediumGray p-5">
-                                <div className="flex justify-center ">
-                                    <MagnifyingGlassIcon />
+                        <div className="min-h-48 max-h-72 overflow-y-scroll">
+                            {options.length > 0 ? options.map((option) => (
+                                <JournalSelectorRow key={option.id} id={option.id} isSelected={option.id === selectedId} label={option.label} onSelect={handleJournalSelected} />)) :
+                                <div className="grid grid-flow-row items-center justify-center text-mediumGray p-5">
+                                    <div className="flex justify-center ">
+                                        <MagnifyingGlassIcon />
+                                    </div>
+                                    <div className="text-regular">
+                                        No Results
+                                    </div>
                                 </div>
-                                <div className="text-regular">
-                                    No Results
-                                </div>
-                            </div>
 
-                        }
+                            }
+                        </div>
                     </FloatingList>
-                    <div className="text-regular text-center hover:cursor-pointer transition-colors duration-200 hover:bg-secondary py-3 border-t border-mediumGray"
+                    <div className="text-regular text-center hover:cursor-pointer transition-colors duration-200 hover:bg-faintGray py-3 border-t border-mediumGray"
                         onClick={() => {
                             const connectionId = data.journalSelectorJournals?.__id
                             createJournal({
@@ -205,7 +228,7 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect })
                             })
                         }}
                     >
-                        + New Notebook
+                        <div className='flex gap-1 text-darkGray items-center justify-center text-body'><AddIcon /> <span className='text-darkerGray'>New Notebook</span></div>
                     </div>
                 </div>
             )}
@@ -297,7 +320,7 @@ const EntryRow: React.FC<EntryRowProps> = ({ fragment, onSelect, selectedEntryId
     const editorText = getPlainTextFromEditorState(editorState)
     const isEditorTextEmpty = editorText == ''
     return (
-        <div className={`hover:bg-secondary hover:cursor-pointer w-full h-16 border-b border-mediumGray py-2 px-5 grid grid-flow-row items-center ${data.id == selectedEntryId ? "bg-secondary" : "bg-white"}`}
+        <div className={` hover:cursor-pointer w-full h-16 border-b border-mediumGray py-2 px-5 grid grid-flow-row items-center transition-colors duration-75 ${data.id == selectedEntryId ? "bg-secondary" : "hover:bg-faintGray"}`}
             style={{ gridTemplateRows: 'auto 1fr' }}
             onClick={() => onSelect(data.id)}
         >
@@ -524,6 +547,7 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
     useEffect(
         function updateEditorOnEntryChange() {
             clearTimer(timerRef)
+            // TODO: this could be causing the the editor state to remain unchanged when switching to another entry
             if (data.node && data.node?.__typename == 'Entry') {
                 setTitle(data.node.title || null)
                 setEditorState(convertStringToEditorState(data.node.content));
@@ -692,9 +716,15 @@ const MainPanel: React.FC<MainPanelProps> = ({ selectedTab }) => {
     const [isFeedEmpty, setIsFeedEmpty] = useState<boolean>(false)
     const data = useLazyLoadQuery(mainPanelQuery, { after: null, journalId: currJournalId, search: searchTerm }) as MainPanelQuery$data;
 
-    const onJournalSelected = useCallback((journalId: string) => {
-        setIsFeedEmpty(false)
+    const onJournalSelected = useCallback((journalId: string | null) => {
         setSearchTerm(null)
+        if (journalId == null) {
+            setIsFeedEmpty(true)
+            setCurrEntryId(null)
+            setCurrJournalId(null)
+            return
+        }
+        setIsFeedEmpty(false)
         setCurrEntryId(null)
         setCurrJournalId(journalId);
     }, [])

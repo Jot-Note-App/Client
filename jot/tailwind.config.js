@@ -15,6 +15,7 @@ export default {
       lightGray: '#E7E7E7',
       mediumGray: "#BBBBBB",
       darkGray: "#828282",
+      darkerGray: "#4F4F4F",
       offBlack: "#213547"
     },
     boxShadow: {

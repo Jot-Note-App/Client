@@ -50,7 +50,7 @@ const DeleteJournalModal: React.FC<DeleteJournalModalProps> = ({ journalId, isOp
             <div className="bg-white flex flex-col justify-center items-center px-4 py-6 w-80">
                 <div className="text-h5 mb-4">Delete Notebook?</div>
                 <div className="text-body text-darkGray w-50 mb-4 text-center">
-                    All notes within this notebook will be deleted as well. This process cannot be undone.
+                    All notes within this notebook will also be deleted. This process cannot be undone.
                 </div>
                 <div className="w-full flex gap-10 justify-center">
                     <Button color={'gray'} onClick={onClose}>
