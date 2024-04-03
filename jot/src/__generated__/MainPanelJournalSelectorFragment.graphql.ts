@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<bf55cd7f657b11d66a8479683c1e7d76>>
+ * @generated SignedSource<<b428376e203579d91c0018f678aa5909>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -18,6 +18,7 @@ export type MainPanelJournalSelectorFragment$data = {
       readonly node: {
         readonly id: string;
         readonly name: string;
+        readonly ordinal: number;
       };
     }>;
   } | null | undefined;
@@ -90,6 +91,13 @@ return {
                   "alias": null,
                   "args": null,
                   "kind": "ScalarField",
+                  "name": "ordinal",
+                  "storageKey": null
+                },
+                {
+                  "alias": null,
+                  "args": null,
+                  "kind": "ScalarField",
                   "name": "__typename",
                   "storageKey": null
                 }
@@ -152,6 +160,6 @@ return {
 };
 })();
 
-(node as any).hash = "823014a759eb7ae9d8557880b5717231";
+(node as any).hash = "d0e7413181b4f6037314c6770681459d";
 
 export default node;
