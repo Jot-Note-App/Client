@@ -138,13 +138,9 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect })
         []);
     useEffect(
         function handleNewJournalSelected() {
-            console.log("Handle new journal selected")
             if (selectedId) {
                 console.log("selectedId", selectedId)
                 localStorage.setItem(lastJournalKey, selectedId)
-            } else {
-                console.log("deleteing lastJournalKey")
-                localStorage.removeItem(lastJournalKey)
             }
         },
         [selectedId])
@@ -158,6 +154,11 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect })
         }
 
     }, []);
+
+    const onDeleteJournalComplete = useCallback(() => {
+        localStorage.removeItem(lastJournalKey)
+        selectFirstJournal()
+    }, [])
 
 
     const { context, refs, floatingStyles } = useFloating({
@@ -198,7 +199,7 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect })
                     name={selectedJournal?.node.name || ''}
                     ordinal={selectedJournal?.node.ordinal || 0}
                     connectionId={data.journalSelectorJournals?.__id || ''}
-                    onDelete={selectFirstJournal}
+                    onDelete={onDeleteJournalComplete}
                 />
             </div>
             {isOpen && (
@@ -722,6 +723,17 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
     )
 };
 
+interface JournalSidePanelProps {
+    entryId: string | null;
+    journalId: string | null;
+    searchTerm: string | null;
+    onJournalSelected: (journalId: string | null) => void;
+    onSearchSubmit: (search: string) => void;
+    onEntryCreated: (entryId: string) => void;
+    onEntrySelected: (entryId: string) => void;
+    onEmptyEntryFeed: () => void;
+}
+
 const mainPanelQuery = graphql`
 query MainPanelQuery($first,: Int!, $after: ID, $journalId: ID $search: String){
   user {
@@ -739,12 +751,32 @@ query MainPanelQuery($first,: Int!, $after: ID, $journalId: ID $search: String){
   }
 }`;
 
-const MainPanel: React.FC<MainPanelProps> = ({ selectedTab }) => {
+const JournalSidePanel: React.FC<JournalSidePanelProps> = ({ entryId, journalId, searchTerm, onJournalSelected, onSearchSubmit, onEntryCreated, onEntrySelected, onEmptyEntryFeed }) => {
+    const data = useLazyLoadQuery(mainPanelQuery, { first: 10, after: null, journalId: journalId, search: searchTerm }) as MainPanelQuery$data;
+    return (
+        <div className="h-screen grid grid-flow-row w-72 border-x border-mediumGray" style={{ gridTemplateRows: 'auto auto 1fr', minWidth: '18rem' }}>
+            <JournalSelector fragment={data.user} onSelect={onJournalSelected} />
+            <EntriesFeedFilters onSearchSubmit={onSearchSubmit} onCreateEntry={onEntryCreated} journalId={journalId} />
+            <Suspense fallback={<div>Loading...</div>}>
+                {data.user.entriesFeedJournals?.edges?.[0].node &&
+                    <EntriesFeed
+                        fragment={data.user.entriesFeedJournals?.edges?.[0].node}
+                        onSelectEntry={onEntrySelected}
+                        selectedEntryId={entryId}
+                        selectedJournalId={journalId}
+                        onEmptyFeed={onEmptyEntryFeed} />
+                }
+            </Suspense>
+        </div>
+    );
+}
+
+const Journals: React.FC = () => {
     const [currJournalId, setCurrJournalId] = useState<string | null>(null)
     const [currEntryId, setCurrEntryId] = useState<string | null>(null)
     const [searchTerm, setSearchTerm] = useState<string | null>(null)
     const [isFeedEmpty, setIsFeedEmpty] = useState<boolean>(false)
-    const data = useLazyLoadQuery(mainPanelQuery, { first: 10, after: null, journalId: currJournalId, search: searchTerm }) as MainPanelQuery$data;
+
 
     const onJournalSelected = useCallback((journalId: string | null) => {
         setSearchTerm(null)
@@ -774,14 +806,17 @@ const MainPanel: React.FC<MainPanelProps> = ({ selectedTab }) => {
     return (
 
         <div className="w-full flex">
-            <div className="h-screen grid grid-flow-row w-72 border-x border-mediumGray" style={{ gridTemplateRows: 'auto auto 1fr', minWidth: '18rem' }}>
-                <JournalSelector fragment={data.user} onSelect={onJournalSelected} />
-                <EntriesFeedFilters onSearchSubmit={onSearchSubmit} onCreateEntry={onEntryCreated} journalId={currJournalId} />
-                <Suspense fallback={<div>Loading...</div>}>
-                    {data.user.entriesFeedJournals?.edges?.[0].node && <EntriesFeed fragment={data.user.entriesFeedJournals?.edges?.[0].node} onSelectEntry={setCurrEntryId} selectedEntryId={currEntryId}
-                        selectedJournalId={currJournalId} onEmptyFeed={() => setIsFeedEmpty(true)} />}
-                </Suspense>
-            </div>
+            <Suspense fallback={<div>Loading...</div>}>
+                <JournalSidePanel
+                    entryId={currEntryId}
+                    journalId={currJournalId}
+                    searchTerm={searchTerm}
+                    onJournalSelected={onJournalSelected}
+                    onSearchSubmit={onSearchSubmit}
+                    onEntryCreated={onEntryCreated}
+                    onEntrySelected={setCurrEntryId}
+                    onEmptyEntryFeed={() => setIsFeedEmpty(true)} />
+            </Suspense>
             {
                 currEntryId ?
                     <Suspense fallback={<div>Loading...</div>}>
@@ -797,6 +832,21 @@ const MainPanel: React.FC<MainPanelProps> = ({ selectedTab }) => {
             }
 
         </div>
+    );
+}
+
+
+const MainPanel: React.FC<MainPanelProps> = ({ selectedTab }) => {
+    var screen;
+    switch (selectedTab) {
+        case MainPanelTab.Journals:
+            screen = <Journals />;
+            break;
+        default:
+            screen = <div></div>;
+    }
+    return (
+        <>{screen}</>
     );
 };
 
