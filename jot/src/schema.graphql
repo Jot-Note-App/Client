@@ -125,7 +125,7 @@ type Query {
 type UpdateUserSuccess {
   user: User!
 }
-type User {
+type User implements Node {
   id: ID!
   firstName: String!
   lastName: String!

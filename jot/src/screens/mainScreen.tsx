@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { useState } from 'react';
 import GoogleLogout from '../components/GoogleLogout'
 import MainSidePanel from '../components/MainSidePanel';
@@ -12,7 +12,9 @@ const MainScreen: React.FC<MainScreenProps> = ({ onLogoutCallback }) => {
     return (
         <div className="min-h-screen max-h-screen min-w-screen flex">
             <MainSidePanel onLogoutCallback={onLogoutCallback} selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
-            <MainPanel selectedTab={selectedTab} />
+            <Suspense fallback={<div>Loading...</div>}>
+                <MainPanel selectedTab={selectedTab} />
+            </Suspense>
         </div>
 
     );

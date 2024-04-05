@@ -1,7 +1,7 @@
 import React, { Suspense, useContext } from 'react';
 import { MainPanelTab } from '../enums/MainPanelTab';
 import { graphql, PayloadError, FragmentRef, ConnectionHandler } from 'relay-runtime';
-import { loadQuery, useFragment, useLazyLoadQuery, useMutation } from 'react-relay';
+import { loadQuery, useFragment, useLazyLoadQuery, useMutation, usePaginationFragment } from 'react-relay';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useFloating, useInteractions, FloatingList, useListNavigation, useTypeahead, useClick, useDismiss, useRole } from '@floating-ui/react';
 import { MainPanelQuery$data } from '../__generated__/MainPanelQuery.graphql';
@@ -116,16 +116,19 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect })
     const [searchTerm, setSearchTerm] = useState<string | null>(null);
     const lastJournalKey = 'lastJournalId'
     const selectedJournal = data.journalSelectorJournals?.edges.find((edge) => edge.node.id == selectedId)
+    console.log("id", selectedId)
     const handleJournalSelected = useCallback((id: string | null) => {
         setSelectedId(id)
         onSelect(id)
     }, [])
     const selectFirstJournal = useCallback(() => {
+        console.log("selectFirstJournal: ", data.journalSelectorJournals?.edges[0].node.id || null)
         handleJournalSelected(data.journalSelectorJournals?.edges[0].node.id || null)
     }, [data.journalSelectorJournals])
     useEffect(
         function handleInitialJournalSelection() {
             const storedLastJournalId = localStorage.getItem(lastJournalKey);
+            console.log("Initial Journal Selection storedLastJournalId", storedLastJournalId)
             if (storedLastJournalId) {
                 handleJournalSelected(storedLastJournalId)
             } else {
@@ -135,9 +138,12 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect })
         []);
     useEffect(
         function handleNewJournalSelected() {
+            console.log("Handle new journal selected")
             if (selectedId) {
+                console.log("selectedId", selectedId)
                 localStorage.setItem(lastJournalKey, selectedId)
             } else {
+                console.log("deleteing lastJournalKey")
                 localStorage.removeItem(lastJournalKey)
             }
         },
@@ -339,33 +345,29 @@ const EntryRow: React.FC<EntryRowProps> = ({ fragment, onSelect, selectedEntryId
 }
 
 const entriesFeedFragment = graphql`
-  fragment MainPanelEntriesFeedFragment on User @argumentDefinitions(
-    id: {type: "ID", defaultValue: null}
+  fragment MainPanelEntriesFeedFragment on Journal 
+  @refetchable(queryName: "MainPanelEntriesFeedRefetchQuery")
+  @argumentDefinitions(
+    # journalId: {type: "ID", defaultValue: null}
+    first: { type: "Int", defaultValue: 1 }
     after: { type: "ID", defaultValue: null }
     search: { type: "String", defaultValue: null }
   ) {
-    id
-    entriesFeedJournals: journals(first: 1, id: $id){
-        edges {
-            node {
-                id
-                name
-                entries(first:20, after: $after, search: $search)@connection(key: "MainPanelEntriesFeedFragment_entries"){
-                    pageInfo {
-                        hasNextPage
-                        endCursor
-                    }
-                    edges{
-                        node{
-                            id
-                            ...MainPanelEntryRowFragment
-                        }
-                    }
+        id
+        name
+        entries(first: $first, after: $after, search: $search)@connection(key: "MainPanelEntriesFeedFragment_entries"){
+            pageInfo {
+                hasNextPage
+                endCursor
+            }
+            edges{
+                node{
+                    id
+                    ...MainPanelEntryRowFragment
                 }
             }
         }
     }
-  }
 `;
 
 interface EntriesFeedProps {
@@ -377,16 +379,14 @@ interface EntriesFeedProps {
 }
 
 const EntriesFeed: React.FC<EntriesFeedProps> = ({ fragment, onSelectEntry, onEmptyFeed, selectedEntryId, selectedJournalId }) => {
-    const data = useFragment(
-        entriesFeedFragment,
-        fragment,
-    ) as MainPanelEntriesFeedFragment$data
+    const { data, loadNext, hasNext } = usePaginationFragment(entriesFeedFragment, fragment)
+    const feedContainerRef = useRef<HTMLDivElement | null>(null)
     const selectFirstEntry = useCallback(() => {
-        const entryId = data.entriesFeedJournals?.edges[0]?.node.entries?.edges[0]?.node.id
+        const entryId = data.entries?.edges[0]?.node.id
         if (entryId) {
             onSelectEntry(entryId)
         }
-    }, [data.entriesFeedJournals])
+    }, [data.entries])
 
 
     useEffect(
@@ -404,19 +404,40 @@ const EntriesFeed: React.FC<EntriesFeedProps> = ({ fragment, onSelectEntry, onEm
 
     useEffect(
         function handleEmptyFeed() {
-            if (data.entriesFeedJournals?.edges[0]?.node.entries?.edges.length == 0) {
+            if (data.entries?.edges.length == 0) {
                 onEmptyFeed()
             }
-        }, [data.entriesFeedJournals])
+        }, [data.entries])
+
+    useEffect(
+        function handleLoadFeedUntilOverflow() {
+            const scrollHeight = feedContainerRef.current?.scrollHeight || 0
+            const clientHeight = feedContainerRef.current?.clientHeight || 0
+            if (scrollHeight <= clientHeight && hasNext) {
+                loadNext(2, {})
+            }
+        }, [data]
+    )
 
     return (
-        <div className="w-full bg-white overflow-auto">
-            {data.entriesFeedJournals?.edges.map((edge) => {
-                return edge.node.entries?.edges.map((edge) => {
+        <div
+            ref={feedContainerRef}
+            className="w-full bg-white overflow-auto"
+            onScroll={() => {
+                const scrollTop = feedContainerRef.current?.scrollTop || 0
+                const scrollHeight = feedContainerRef.current?.scrollHeight || 0
+                const clientHeight = feedContainerRef.current?.clientHeight || 0
+                if ((scrollTop + clientHeight) / scrollHeight >= 0.85 && hasNext) {
+                    loadNext(5, {})
+                }
+            }}
+        >
+            {
+                data.entries?.edges.map((edge) => {
                     const entry = edge.node
                     return <EntryRow key={entry.id} fragment={entry} onSelect={onSelectEntry} selectedEntryId={selectedEntryId} />
                 })
-            })}
+            }
         </div>
     );
 }
@@ -702,11 +723,19 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
 };
 
 const mainPanelQuery = graphql`
-query MainPanelQuery($after: ID, $journalId: ID, $search: String){
+query MainPanelQuery($first,: Int!, $after: ID, $journalId: ID $search: String){
   user {
     id
     ...MainPanelJournalSelectorFragment
-    ...MainPanelEntriesFeedFragment @arguments(after: $after, id: $journalId, search: $search)
+    entriesFeedJournals: journals(first: 1, id: $journalId){
+        edges {
+            node {
+                id
+                ...MainPanelEntriesFeedFragment @arguments(first: $first, after: $after, search: $search)
+            }
+        
+        }
+    }
   }
 }`;
 
@@ -715,7 +744,7 @@ const MainPanel: React.FC<MainPanelProps> = ({ selectedTab }) => {
     const [currEntryId, setCurrEntryId] = useState<string | null>(null)
     const [searchTerm, setSearchTerm] = useState<string | null>(null)
     const [isFeedEmpty, setIsFeedEmpty] = useState<boolean>(false)
-    const data = useLazyLoadQuery(mainPanelQuery, { after: null, journalId: currJournalId, search: searchTerm }) as MainPanelQuery$data;
+    const data = useLazyLoadQuery(mainPanelQuery, { first: 10, after: null, journalId: currJournalId, search: searchTerm }) as MainPanelQuery$data;
 
     const onJournalSelected = useCallback((journalId: string | null) => {
         setSearchTerm(null)
@@ -742,15 +771,15 @@ const MainPanel: React.FC<MainPanelProps> = ({ selectedTab }) => {
     const onEntryDeleted = useCallback(() => {
         setCurrEntryId(null)
     }, [])
-
     return (
+
         <div className="w-full flex">
             <div className="h-screen grid grid-flow-row w-72 border-x border-mediumGray" style={{ gridTemplateRows: 'auto auto 1fr', minWidth: '18rem' }}>
                 <JournalSelector fragment={data.user} onSelect={onJournalSelected} />
                 <EntriesFeedFilters onSearchSubmit={onSearchSubmit} onCreateEntry={onEntryCreated} journalId={currJournalId} />
                 <Suspense fallback={<div>Loading...</div>}>
-                    <EntriesFeed fragment={data.user} onSelectEntry={setCurrEntryId} selectedEntryId={currEntryId}
-                        selectedJournalId={currJournalId} onEmptyFeed={() => setIsFeedEmpty(true)} />
+                    {data.user.entriesFeedJournals?.edges?.[0].node && <EntriesFeed fragment={data.user.entriesFeedJournals?.edges?.[0].node} onSelectEntry={setCurrEntryId} selectedEntryId={currEntryId}
+                        selectedJournalId={currJournalId} onEmptyFeed={() => setIsFeedEmpty(true)} />}
                 </Suspense>
             </div>
             {
