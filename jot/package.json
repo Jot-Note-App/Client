@@ -26,7 +26,8 @@
     "react-jwt": "^1.2.0",
     "react-relay": "16.0.0",
     "reactjs-popup": "^2.0.6",
-    "relay-runtime": "16.0.0"
+    "relay-runtime": "16.0.0",
+    "webpack": "^5.91.0"
   },
   "devDependencies": {
     "@apollo/rover": "^0.21.0",
