@@ -116,19 +116,16 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect })
     const [searchTerm, setSearchTerm] = useState<string | null>(null);
     const lastJournalKey = 'lastJournalId'
     const selectedJournal = data.journalSelectorJournals?.edges.find((edge) => edge.node.id == selectedId)
-    console.log("id", selectedId)
     const handleJournalSelected = useCallback((id: string | null) => {
         setSelectedId(id)
         onSelect(id)
     }, [])
     const selectFirstJournal = useCallback(() => {
-        console.log("selectFirstJournal: ", data.journalSelectorJournals?.edges[0].node.id || null)
         handleJournalSelected(data.journalSelectorJournals?.edges[0].node.id || null)
     }, [data.journalSelectorJournals])
     useEffect(
         function handleInitialJournalSelection() {
             const storedLastJournalId = localStorage.getItem(lastJournalKey);
-            console.log("Initial Journal Selection storedLastJournalId", storedLastJournalId)
             if (storedLastJournalId) {
                 handleJournalSelected(storedLastJournalId)
             } else {
@@ -139,7 +136,6 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect })
     useEffect(
         function handleNewJournalSelected() {
             if (selectedId) {
-                console.log("selectedId", selectedId)
                 localStorage.setItem(lastJournalKey, selectedId)
             }
         },
