@@ -20,15 +20,40 @@
 }
 
 /* ReactJS Popup Styles */
-.popup-content {
-  @apply m-auto bg-white rounded-md border border-faintGray overflow-hidden;
+/* .popup-content {
+  margin: auto;
+  background: rgb(255, 255, 255);
+  width: 50%;
+  padding: 5px;
 }
 
 .popup-arrow {
-  @apply text-white;
+  color: rgb(0, 0, 0);
 }
 
 [role='tooltip'].popup-content {
+  width: 200px;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 0px 3px;
+}
+
+.popup-overlay {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+[data-popup='tooltip'].popup-overlay {
+  background: transparent;
+} */
+
+.popup-content {
+  @apply bg-white rounded-md border border-faintGray overflow-hidden;
+}
+
+.popup-arrow {
+  color: rgb(0, 0, 0);
+}
+
+[role='tooltip'].popup-content {
+  @apply bg-black overflow-visible text-center border-0;
   box-shadow: rgba(0, 0, 0, 0.16) 0px 0px 3px;
 }
 
