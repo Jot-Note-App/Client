@@ -40,6 +40,8 @@ import DeleteEntryModal from '../components/screens/journals/DeleteEntryModal';
 import TrashIcon from '../icons/TrashIcon';
 import JournalSelectorActionMenu from '../components/screens/journals/JournalSelectorActionMenu';
 import AddIcon from '../icons/AddIcon';
+import Popup from 'reactjs-popup';
+import Tooltip from '../components/reusable/Tooltip';
 interface MainPanelProps {
     selectedTab: MainPanelTab;
 }
@@ -224,7 +226,7 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect })
                             const connectionId = data.journalSelectorJournals?.__id
                             createJournal({
                                 variables: {
-                                    name: 'Untitled Notebook',
+                                    name: 'New Notebook',
                                     userId: userContext.id,
                                     connections: connectionId ? [connectionId] : [],
                                 },
@@ -279,23 +281,28 @@ const EntriesFeedFilters: React.FC<EntriesFeedFiltersProps> = ({ onSearchSubmit,
     return (
         <div className="grid grid-flow-col items-center gap-2 bg-faintGray border-b border-mediumGray p-6 ">
             <Search onSubmit={onSearchSubmit} placeholder='Enter to search ...' />
-            <div className="text-darkGray hover:cursor-pointer hover:text-main transition-colors duration-300"
-                onClick={() => {
-                    if (journalId) {
-                        const connectionId = ConnectionHandler.getConnectionID(journalId, 'MainPanelEntriesFeedFragment_entries')
-                        createEntry({
-                            variables: {
-                                content: '',
-                                journalId: journalId,
-                                connections: connectionId ? [connectionId] : [],
-                            },
-                            onCompleted: onCreateEntryComplete,
-                        })
-                    }
-                }}>
-                <AddCircleIcon />
-            </div>
-        </div>
+            <Tooltip
+                text='Create note'
+                offsetX={-3}
+            >
+                <div className="text-darkGray hover:cursor-pointer hover:text-main transition-colors duration-300"
+                    onClick={() => {
+                        if (journalId) {
+                            const connectionId = ConnectionHandler.getConnectionID(journalId, 'MainPanelEntriesFeedFragment_entries')
+                            createEntry({
+                                variables: {
+                                    content: '',
+                                    journalId: journalId,
+                                    connections: connectionId ? [connectionId] : [],
+                                },
+                                onCompleted: onCreateEntryComplete,
+                            })
+                        }
+                    }}>
+                    <AddCircleIcon />
+                </div>
+            </Tooltip>
+        </div >
     );
 }
 
@@ -626,12 +633,23 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
                             </div>
                             <div className="flex justify-end items-center">
                                 {/* TODO: replace SaveIcon with loading indicator when saving*/}
-                                <div className="hover:text-main transition-colors duration-300 hover:cursor-pointer p-3" onClick={() => saveEditorState()}>
-                                    <SaveIcon />
-                                </div>
-                                <div className="hover:text-main transition-colors duration-300 hover:cursor-pointer p-3" onClick={() => setIsDeleteEntryModalOpen(true)}>
-                                    <TrashIcon />
-                                </div>
+                                <Tooltip
+                                    text='Save note'
+                                    offsetX={15}
+                                    offsetY={-10}>
+                                    <div className="hover:text-main transition-colors duration-300 hover:cursor-pointer p-3" onClick={() => saveEditorState()}>
+                                        <SaveIcon />
+                                    </div>
+                                </Tooltip>
+
+                                <Tooltip
+                                    text='Delete note'
+                                    offsetX={15}
+                                    offsetY={-10}>
+                                    <div className="hover:text-main transition-colors duration-300 hover:cursor-pointer p-3" onClick={() => setIsDeleteEntryModalOpen(true)}>
+                                        <TrashIcon />
+                                    </div>
+                                </Tooltip>
                             </div>
                         </div>
                         <div className='overflow-y-scroll flex justify-center text-body'>

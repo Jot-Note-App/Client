@@ -5,6 +5,7 @@ import GoogleLogout from './GoogleLogout';
 import LogoutIcon from '../icons/LogoutIcon';
 import { MainPanelTab } from '../enums/MainPanelTab';
 import { UserContext } from './UserContextProvider';
+import Tooltip from './reusable/Tooltip';
 interface UserProfileInfoProps {
     hideDetails?: boolean;
 }
@@ -42,22 +43,34 @@ const MainSidePanel: React.FC<MainSidePanelProps> = ({ onLogoutCallback, selecte
                     <UserProfileInfo hideDetails={true} />
                 </div>
                 <div className="mt-4">
-                    <div className={"bg-mainDark rounded p-2 hover:cursor-pointer text-secondary"}>
-                        <div className="flex gap-2 items-center justify-center">
-                            <BookIcon />
+                    <Tooltip
+                        text='Notebooks'
+                        offsetX={0}
+                    >
+                        <div className={"bg-mainDark rounded p-2 hover:cursor-pointer text-secondary"}>
+                            <div className="flex gap-2 items-center justify-center">
+                                <BookIcon />
+                            </div>
                         </div>
-                    </div>
+                    </Tooltip>
                 </div>
             </div>
 
             <div>
+
                 <GoogleLogout onLogoutCallback={onLogoutCallback}>
-                    <div className={"hover:bg-mainDark transition-colors duration-200 rounded p-2 hover:cursor-pointer text-white hover:text-secondary"}>
-                        <div className="flex gap-2 items-center justify-center">
-                            <LogoutIcon />
+                    <Tooltip
+                        text='Sign out'
+
+                    >
+                        <div className={"hover:bg-mainDark transition-colors duration-200 rounded p-2 hover:cursor-pointer text-white hover:text-secondary"}>
+                            <div className="flex gap-2 items-center justify-center">
+                                <LogoutIcon />
+                            </div>
                         </div>
-                    </div>
+                    </Tooltip>
                 </GoogleLogout>
+
             </div>
         </div>
     );

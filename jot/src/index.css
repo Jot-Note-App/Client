@@ -21,14 +21,15 @@
 
 /* ReactJS Popup Styles */
 .popup-content {
-  @apply m-auto bg-white rounded-md border border-faintGray overflow-hidden;
+  @apply bg-white rounded-md border border-faintGray overflow-hidden;
 }
 
 .popup-arrow {
-  @apply text-white;
+  @apply text-black;
 }
 
 [role='tooltip'].popup-content {
+  @apply bg-black overflow-visible text-center border-0;
   box-shadow: rgba(0, 0, 0, 0.16) 0px 0px 3px;
 }
 
