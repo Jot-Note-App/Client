@@ -703,7 +703,6 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
                                         stripPastedStyles={true}
                                         autoCapitalize='on'
                                         placeholder='Start typing here ...'
-                                        keyBindingFn={keyBindingFn}
                                         plugins={plugins}
                                     />
                                     <div className='flex justify-center'>

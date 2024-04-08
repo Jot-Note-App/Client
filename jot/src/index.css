@@ -62,11 +62,11 @@
 
 /* DraftJS Toolbar Styles */
 .bi09khh {
-  @apply flex items-center;
+  @apply flex items-center outline-none;
 }
 
 .bc4rxid {
-  @apply flex items-center justify-center h-10 w-10 border-0 text-darkGray text-lg;
+  @apply outline-none flex items-center justify-center h-10 w-10 border-0 text-darkGray text-lg;
 }
 
 .bc4rxid:hover,
