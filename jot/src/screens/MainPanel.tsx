@@ -15,7 +15,7 @@ import { UserContext } from '../components/UserContextProvider';
 import { MainPanelCreateJournalMutation$data } from '../__generated__/MainPanelCreateJournalMutation.graphql';
 import AddCircleIcon from '../icons/AddCircleIcon';
 import { MainPanelCreateEntryMutation, MainPanelCreateEntryMutation$data } from '../__generated__/MainPanelCreateEntryMutation.graphql';
-import { ContentBlock, ContentState, EditorState, Modifier, RichUtils, convertFromRaw, convertToRaw, getDefaultKeyBinding } from 'draft-js';
+import { ContentBlock, ContentState, EditorState, Modifier, RichUtils, convertFromRaw, convertToRaw, getDefaultKeyBinding, getVisibleSelectionRect } from 'draft-js';
 import Editor from '@draft-js-plugins/editor';
 import createToolbarPlugin, { Separator } from '@draft-js-plugins/static-toolbar';
 import createLinkifyPlugin from '@draft-js-plugins/linkify';
@@ -499,7 +499,8 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
     const [editorState, setEditorState] = useState(convertStringToEditorState(content));
     const editorRef = useRef<Editor | null>(null);
     const editorContainerRef = useRef<HTMLDivElement | null>(null);
-    const titleRef = useRef<HTMLInputElement | null>(null);
+    const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+    const titleRef = useRef<HTMLTextAreaElement | null>(null);
     const timerRef = useRef<number | null>(null);
     const [isToolbarVisible, setIsToolbarVisible] = useState(false)
     const [isDeleteEntryModalOpen, setIsDeleteEntryModalOpen] = useState(false);
@@ -585,10 +586,49 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
             }
         }, [entryId])
 
-    const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
         clearTimer(timerRef)
         setTitle(e.target.value);
     }, [timerRef])
+
+    useEffect(
+        function handleTitleResize() {
+            // First reset the height to 0px so that the scrollHeight can be calculated accurately 
+            titleRef.current?.style.setProperty('height', `0px`)
+            const scrollHeight = titleRef.current?.scrollHeight || 0
+            titleRef.current?.style.setProperty('height', `${scrollHeight}px`)
+        }, [titleRef, title]
+    )
+
+    // useEffect(function handleCursorScrollIntoView() {
+    //     // const scrollAnchorNode = editorRef.current?.editor?.editorContainer;
+    //     // const isFocused = editorRef.current?.editor?.editor?.contains(document.activeElement);
+    //     // if (scrollAnchorNode && isFocused) {
+    //     //     console.log("scrolling")
+    //     //     scrollAnchorNode.scrollIntoView({ behavior: 'auto' });
+    //     // }
+    // }, [editorState.getCurrentContent()]);
+    const handleScroll = () => {
+        const minimumBottomPadding = 120;
+        const editor = editorRef.current;
+        if (editor) {
+            const selectionRect = getVisibleSelectionRect(window);
+            if (selectionRect) {
+                const { top, bottom } = selectionRect;
+                const windowHeight = window.innerHeight;
+                const scrolledFromBottom = windowHeight - bottom;
+
+                if (scrolledFromBottom < minimumBottomPadding) {
+                    const targetPosition = windowHeight - minimumBottomPadding;
+                    console.log("scrolling", top, targetPosition, scrolledFromBottom)
+                    scrollContainerRef.current?.scrollBy({
+                        top: top - targetPosition,
+                        behavior: 'instant',
+                    });
+                }
+            }
+        }
+    };
 
     const handleEditorStateChange = useCallback((editorState: EditorState) => {
         if (data.node) {
@@ -598,6 +638,7 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
             }, 3000);
             timerRef.current = timer;
         }
+        handleScroll()
         setEditorState(editorState);
     }, [data, timerRef, saveEditorState]);
 
@@ -633,13 +674,13 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
                             <div className="text-center">
                                 {data.node.journal.name} / <span className='text-offBlack'>{data.node.title || "Untitled"} </span>
                             </div>
-                            <div className="grid grid-flow-col justify-end items-center">
+                            <div className="grid grid-flow-col justify-end items-start">
                                 {/* TODO: replace SaveIcon with loading indicator when saving*/}
                                 <Tooltip
                                     text='Read-only: enables links'
                                     offsetX={15}
                                 >
-                                    <div className={`flex items-center justify-center hover:text-main transition-colors duration-300 hover:cursor-pointer w-14  ${readOnly && 'text-main'}`} onClick={() => { setReadOnly(prev => !prev) }}>
+                                    <div className={`flex items-center justify-center hover:text-main transition-colors duration-300 hover:cursor-pointer w-14 h-10  ${readOnly && 'text-main'}`} onClick={() => { setReadOnly(prev => !prev) }}>
                                         <OpenBookIcon />
                                     </div>
                                 </Tooltip>
@@ -647,7 +688,7 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
                                     text='Save note'
                                     offsetX={15}
                                 >
-                                    <div className="flex items-center justify-center hover:text-main transition-colors duration-300 hover:cursor-pointer w-14" onClick={() => saveEditorState()}>
+                                    <div className="flex items-center justify-center hover:text-main transition-colors duration-300 hover:cursor-pointer w-14 h-10" onClick={() => saveEditorState()}>
                                         <SaveIcon />
                                     </div>
                                 </Tooltip>
@@ -656,13 +697,13 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
                                     text='Delete note'
                                     offsetX={15}
                                 >
-                                    <div className="flex items-center justify-center hover:text-main transition-colors duration-300 hover:cursor-pointer w-14" onClick={() => setIsDeleteEntryModalOpen(true)}>
+                                    <div className="flex items-center justify-center hover:text-main transition-colors duration-300 hover:cursor-pointer w-14 h-10" onClick={() => setIsDeleteEntryModalOpen(true)}>
                                         <TrashIcon />
                                     </div>
                                 </Tooltip>
                             </div>
                         </div>
-                        <div className='overflow-y-scroll flex justify-center text-body'>
+                        <div ref={scrollContainerRef} className='overflow-y-scroll flex justify-center text-body'>
                             <div className={`w-9/12 h-full max-h-full ${!readOnly && 'hover:cursor-text'}`}
                                 style={{ maxWidth: '50rem' }}
                                 onClick={(e) => {
@@ -674,15 +715,17 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
                                     e.stopPropagation();
                                 }}>
                                 <div className='h-10 hover:cursor-default' onClick={e => e.stopPropagation()} />
-                                <form onSubmit={e => {
-                                    e.preventDefault();
-                                    if (editorRef.current) {
-                                        editorRef.current.focus();
-                                    }
-                                    e.stopPropagation()
-                                }}>
-                                    <input ref={titleRef}
-                                        className={`hover:cursor-text appearance-none border-none focus:outline-none text-title w-full pb-2 ${title ? "text-black" : "text-darkGray"} `}
+                                <form
+                                    className='max-h-full'
+                                    onSubmit={e => {
+                                        e.preventDefault();
+                                        if (editorRef.current) {
+                                            editorRef.current.focus();
+                                        }
+                                        e.stopPropagation()
+                                    }}>
+                                    <textarea ref={titleRef}
+                                        className={`hover:cursor-text max-h-full resize-none overflow-auto appearance-none border-none focus:outline-none text-title w-full pb-2 ${title ? "text-black" : "text-darkGray"} `}
                                         placeholder={"Untitled"}
                                         onClick={e => e.stopPropagation()}
                                         onChange={handleTitleChange}
@@ -703,6 +746,7 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
                                         stripPastedStyles={true}
                                         autoCapitalize='on'
                                         placeholder='Start typing here ...'
+                                        keyBindingFn={keyBindingFn}
                                         plugins={plugins}
                                     />
                                     <div className='flex justify-center'>
