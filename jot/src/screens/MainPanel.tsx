@@ -42,6 +42,7 @@ import JournalSelectorActionMenu from '../components/screens/journals/JournalSel
 import AddIcon from '../icons/AddIcon';
 import Popup from 'reactjs-popup';
 import Tooltip from '../components/reusable/Tooltip';
+import OpenBookIcon from '../icons/OpenBookIcon';
 interface MainPanelProps {
     selectedTab: MainPanelTab;
 }
@@ -492,6 +493,7 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
     const data = useLazyLoadQuery(mainPanelEntryEditorQuery, { entryId: entryId }) as MainPanelEntryEditorQuery$data;
     const [updateEntry, _isUpdatingEntry] = useMutation(mainPanelUpdateEntryMutation);
     const defaultTitle = data.node?.__typename == 'Entry' ? data.node.title || null : null
+    const [readOnly, setReadOnly] = useState(false)
     const [title, setTitle] = useState(defaultTitle);
     const content = data.node?.__typename == 'Entry' ? data.node.content : '';
     const [editorState, setEditorState] = useState(convertStringToEditorState(content));
@@ -504,7 +506,7 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
     const journalId = data.node?.__typename == 'Entry' ? data.node?.journal.id : ''
     const journalEntriesConnectionId = ConnectionHandler.getConnectionID(journalId, 'MainPanelEntriesFeedFragment_entries')
     const [{ plugins, Toolbar }] = useState(() => {
-        const linkifyPlugin = createLinkifyPlugin();
+        const linkifyPlugin = createLinkifyPlugin({ target: '_blank', rel: 'noopener noreferrer' });
         const toolbarPlugin = createToolbarPlugin();
         const { Toolbar } = toolbarPlugin;
         const plugins = [toolbarPlugin, linkifyPlugin];
@@ -631,13 +633,21 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
                             <div className="text-center">
                                 {data.node.journal.name} / <span className='text-offBlack'>{data.node.title || "Untitled"} </span>
                             </div>
-                            <div className="flex justify-end items-center">
+                            <div className="grid grid-flow-col justify-end items-center">
                                 {/* TODO: replace SaveIcon with loading indicator when saving*/}
+                                <Tooltip
+                                    text='Read-only: enables links'
+                                    offsetX={15}
+                                >
+                                    <div className={`flex items-center justify-center hover:text-main transition-colors duration-300 hover:cursor-pointer w-14  ${readOnly && 'text-main'}`} onClick={() => { setReadOnly(prev => !prev) }}>
+                                        <OpenBookIcon />
+                                    </div>
+                                </Tooltip>
                                 <Tooltip
                                     text='Save note'
                                     offsetX={15}
-                                    offsetY={-10}>
-                                    <div className="hover:text-main transition-colors duration-300 hover:cursor-pointer p-3" onClick={() => saveEditorState()}>
+                                >
+                                    <div className="flex items-center justify-center hover:text-main transition-colors duration-300 hover:cursor-pointer w-14" onClick={() => saveEditorState()}>
                                         <SaveIcon />
                                     </div>
                                 </Tooltip>
@@ -645,15 +655,15 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
                                 <Tooltip
                                     text='Delete note'
                                     offsetX={15}
-                                    offsetY={-10}>
-                                    <div className="hover:text-main transition-colors duration-300 hover:cursor-pointer p-3" onClick={() => setIsDeleteEntryModalOpen(true)}>
+                                >
+                                    <div className="flex items-center justify-center hover:text-main transition-colors duration-300 hover:cursor-pointer w-14" onClick={() => setIsDeleteEntryModalOpen(true)}>
                                         <TrashIcon />
                                     </div>
                                 </Tooltip>
                             </div>
                         </div>
                         <div className='overflow-y-scroll flex justify-center text-body'>
-                            <div className="w-9/12 h-full max-h-full hover:cursor-text"
+                            <div className={`w-9/12 h-full max-h-full ${!readOnly && 'hover:cursor-text'}`}
                                 style={{ maxWidth: '50rem' }}
                                 onClick={(e) => {
                                     if (editorRef.current) {
@@ -672,11 +682,12 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
                                     e.stopPropagation()
                                 }}>
                                     <input ref={titleRef}
-                                        className={`appearance-none border-none focus:outline-none text-title w-full pb-2 ${title ? "text-black" : "text-darkGray"} `}
+                                        className={`hover:cursor-text appearance-none border-none focus:outline-none text-title w-full pb-2 ${title ? "text-black" : "text-darkGray"} `}
                                         placeholder={"Untitled"}
                                         onClick={e => e.stopPropagation()}
                                         onChange={handleTitleChange}
                                         value={title || ''}
+                                        disabled={readOnly}
                                     />
                                 </form>
                                 <div ref={editorContainerRef} onClick={e => e.stopPropagation()}>
@@ -686,7 +697,8 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
                                         onChange={handleEditorStateChange}
                                         handleKeyCommand={handleKeyCommand}
                                         textAlignment='left'
-                                        spellCheck={true}
+                                        readOnly={readOnly}
+                                        spellCheck={!readOnly}
                                         textDirectionality='LTR'
                                         stripPastedStyles={true}
                                         autoCapitalize='on'
@@ -694,10 +706,8 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
                                         keyBindingFn={keyBindingFn}
                                         plugins={plugins}
                                     />
-
-
                                     <div className='flex justify-center'>
-                                        <div className={`fixed z-10 transition-transform duration-300 bottom-10  ${isToolbarVisible ? 'translate-y-0' : 'translate-y-20'}`}>
+                                        <div className={`fixed z-10 transition-transform duration-300 bottom-10  ${isToolbarVisible && !readOnly ? 'translate-y-0' : 'translate-y-20'}`}>
                                             <Toolbar >
                                                 {
                                                     (externalProps) => (
