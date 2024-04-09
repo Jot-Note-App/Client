@@ -122,6 +122,7 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect })
     const handleJournalSelected = useCallback((id: string | null) => {
         setSelectedId(id)
         onSelect(id)
+        setIsOpen(false)
     }, [])
     const selectFirstJournal = useCallback(() => {
         handleJournalSelected(data.journalSelectorJournals?.edges[0].node.id || null)
@@ -207,7 +208,7 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect })
                         <Search onSearchChange={setSearchTerm} />
                     </div>
                     <FloatingList elementsRef={elementsRef} labelsRef={labelsRef}>
-                        <div className="min-h-48 max-h-72 overflow-y-scroll">
+                        <div className="min-h-48 max-h-72 overflow-y-scroll" >
                             {options.length > 0 ? options.map((option) => (
                                 <JournalSelectorRow key={option.id} id={option.id} isSelected={option.id === selectedId} label={option.label} onSelect={handleJournalSelected} />)) :
                                 <div className="grid grid-flow-row items-center justify-center text-mediumGray p-5">
