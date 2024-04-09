@@ -43,6 +43,8 @@ import AddIcon from '../icons/AddIcon';
 import Popup from 'reactjs-popup';
 import Tooltip from '../components/reusable/Tooltip';
 import OpenBookIcon from '../icons/OpenBookIcon';
+import GhostEmptyState from '../icons/empty_states/GhostEmptyState';
+import DotSpinner from '../icons/animated/DotSpinner';
 interface MainPanelProps {
     selectedTab: MainPanelTab;
 }
@@ -105,9 +107,10 @@ const JournalSelectorRow: React.FC<JournalSelectorRowProps> = ({ id, isSelected,
 interface JournalSelectorProps {
     fragment: MainPanelJournalSelectorFragment$key;
     onSelect: (journalId: string | null) => void;
+    entryFeedJournalsConnectionId: string;
 }
 
-const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect }) => {
+const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect, entryFeedJournalsConnectionId }) => {
     const data = useFragment(
         journalSelectorFragment,
         fragment,
@@ -125,7 +128,7 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect })
         setIsOpen(false)
     }, [])
     const selectFirstJournal = useCallback(() => {
-        handleJournalSelected(data.journalSelectorJournals?.edges[0].node.id || null)
+        handleJournalSelected(data.journalSelectorJournals?.edges[0]?.node.id || null)
     }, [data.journalSelectorJournals])
     useEffect(
         function handleInitialJournalSelection() {
@@ -198,7 +201,7 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect })
                     journalId={selectedId || ''}
                     name={selectedJournal?.node.name || ''}
                     ordinal={selectedJournal?.node.ordinal || 0}
-                    connectionId={data.journalSelectorJournals?.__id || ''}
+                    connectionIds={[data.journalSelectorJournals?.__id || '', entryFeedJournalsConnectionId]}
                     onDelete={onDeleteJournalComplete}
                 />
             </div>
@@ -410,7 +413,9 @@ const EntriesFeed: React.FC<EntriesFeedProps> = ({ fragment, onSelectEntry, onEm
 
     useEffect(
         function handleEmptyFeed() {
-            if (data.entries?.edges.length == 0) {
+            var numEntries = data.entries?.edges.length || 0
+            console.log("OnEmptyFeed numEntries:", numEntries)
+            if (numEntries == 0) {
                 onEmptyFeed()
             }
         }, [data.entries])
@@ -798,6 +803,7 @@ query MainPanelQuery($first,: Int!, $after: ID, $journalId: ID $search: String){
     id
     ...MainPanelJournalSelectorFragment
     entriesFeedJournals: journals(first: 1, id: $journalId){
+        __id
         edges {
             node {
                 id
@@ -811,21 +817,60 @@ query MainPanelQuery($first,: Int!, $after: ID, $journalId: ID $search: String){
 
 const JournalSidePanel: React.FC<JournalSidePanelProps> = ({ entryId, journalId, searchTerm, onJournalSelected, onSearchSubmit, onEntryCreated, onEntrySelected, onEmptyEntryFeed }) => {
     const data = useLazyLoadQuery(mainPanelQuery, { first: 10, after: null, journalId: journalId, search: searchTerm }) as MainPanelQuery$data;
+    const [createJournal, _isCreatingJournal] = useMutation(mainPanelCreateJournalMutation);
+    const numJournals = data.user.entriesFeedJournals?.edges.length || 0
+    console.log("numJournals: ", numJournals)
+    useEffect(
+        function handleJournalsChange() {
+            const numJournals = data.user.entriesFeedJournals?.edges.length || 0
+            if (numJournals == 0) {
+                onEmptyEntryFeed()
+            }
+        }, [data.user.entriesFeedJournals])
+
+    const onCreateJournalComplete = useCallback((response: {}, _errors: PayloadError[] | null) => {
+        const res = response as MainPanelCreateJournalMutation$data;
+        if (res.createJournal.__typename == 'CreateJournalMutationSuccess') {
+            const newJournal = res.createJournal.journalEdge.node
+            onJournalSelected(newJournal.id)
+        }
+
+    }, []);
     return (
-        <div className="h-screen grid grid-flow-row w-72 border-x border-mediumGray" style={{ gridTemplateRows: 'auto auto 1fr', minWidth: '18rem' }}>
-            <JournalSelector fragment={data.user} onSelect={onJournalSelected} />
-            <EntriesFeedFilters onSearchSubmit={onSearchSubmit} onCreateEntry={onEntryCreated} journalId={journalId} />
-            <Suspense fallback={<div>Loading...</div>}>
-                {data.user.entriesFeedJournals?.edges?.[0].node &&
-                    <EntriesFeed
-                        fragment={data.user.entriesFeedJournals?.edges?.[0].node}
-                        onSelectEntry={onEntrySelected}
-                        selectedEntryId={entryId}
-                        selectedJournalId={journalId}
-                        onEmptyFeed={onEmptyEntryFeed} />
-                }
-            </Suspense>
-        </div>
+        <>
+            {
+                numJournals > 0 ?
+                    <div className="h-screen grid grid-flow-row w-72 border-x border-mediumGray" style={{ gridTemplateRows: 'auto auto 1fr', minWidth: '18rem' }}>
+                        <JournalSelector fragment={data.user} onSelect={onJournalSelected} entryFeedJournalsConnectionId={data.user.entriesFeedJournals?.__id || ''} />
+                        <EntriesFeedFilters onSearchSubmit={onSearchSubmit} onCreateEntry={onEntryCreated} journalId={journalId} />
+                        <Suspense fallback={<div>Loading...</div>}>
+                            {data.user.entriesFeedJournals?.edges?.[0]?.node &&
+                                <EntriesFeed
+                                    fragment={data.user.entriesFeedJournals?.edges?.[0].node}
+                                    onSelectEntry={onEntrySelected}
+                                    selectedEntryId={entryId}
+                                    selectedJournalId={journalId}
+                                    onEmptyFeed={onEmptyEntryFeed} />
+                            }
+                        </Suspense>
+                    </div>
+                    : <div className="w-72 border-x border-mediumGray h-full flex flex-col gap-2 items-center justify-center text-mediumGray" style={{ minWidth: '18rem' }}>
+                        <div className="text-h4">No notebooks</div>
+                        <div className="text-body font-semibold text-main hover:cursor-pointer"
+                            onClick={() => {
+                                createJournal({
+                                    variables: {
+                                        name: 'New Notebook',
+                                        userId: data.user.id,
+                                        connections: [],
+                                    },
+                                    onCompleted: onCreateJournalComplete,
+                                })
+                            }}>
+                            Create a notebook</div>
+                    </div>
+            }
+        </>
     );
 }
 
@@ -877,13 +922,18 @@ const Journals: React.FC = () => {
             </Suspense>
             {
                 currEntryId ?
-                    <Suspense fallback={<div>Loading...</div>}>
+                    <Suspense fallback={<div className='w-full h-full flex items-center justify-center'>
+                        <DotSpinner />
+                    </div>}>
                         <EntryEditor entryId={currEntryId} onEntryDeleted={onEntryDeleted} />
                     </Suspense>
                     : !isFeedEmpty ?
-                        <div>Loading...</div>
+                        <div className='w-full h-full flex items-center justify-center'>
+                            <DotSpinner />
+                        </div>
                         :
                         <div className="w-full h-full flex flex-col gap-2 items-center justify-center text-mediumGray">
+                            <GhostEmptyState />
                             <div className="text-h3">No notes to show</div>
                             <div className="text-lg">Create a note in the side panel to get started!</div>
                         </div>

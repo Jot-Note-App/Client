@@ -10,11 +10,11 @@ interface JournalSelectorActionMenuProps {
     journalId: string,
     name: string,
     ordinal: number,
-    connectionId: string,
+    connectionIds: string[],
     onDelete: () => void
 }
 
-const JournalSelectorActionMenu: React.FC<JournalSelectorActionMenuProps> = ({ journalId, name, ordinal, connectionId, onDelete }) => {
+const JournalSelectorActionMenu: React.FC<JournalSelectorActionMenuProps> = ({ journalId, name, ordinal, connectionIds, onDelete }) => {
     const [isDeleteJournalModalOpen, setIsDeleteJournalModalOpen] = React.useState(false);
     const [isEditJournalModalOpen, setIsEditJournalModalOpen] = React.useState(false);
     const popupRef = useRef<PopupActions.PopupActions>(null);
@@ -70,7 +70,7 @@ const JournalSelectorActionMenu: React.FC<JournalSelectorActionMenuProps> = ({ j
                     setIsDeleteJournalModalOpen(false)
                 }}
                 onClose={() => setIsDeleteJournalModalOpen(false)}
-                connectionId={connectionId} />
+                connectionIds={connectionIds} />
         </div>
 
     );

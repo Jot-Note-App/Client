@@ -25,15 +25,15 @@ interface DeleteJournalModalProps {
     isOpen: boolean,
     onSuccessfulDelete: () => void,
     onClose: () => void,
-    connectionId: string
+    connectionIds: string[]
 }
-const DeleteJournalModal: React.FC<DeleteJournalModalProps> = ({ journalId, isOpen, onSuccessfulDelete, onClose, connectionId }) => {
+const DeleteJournalModal: React.FC<DeleteJournalModalProps> = ({ journalId, isOpen, onSuccessfulDelete, onClose, connectionIds }) => {
     const [deleteJournal] = useMutation(deleteJournalModalDeleteJournalMutation);
     const handleDeleteJournal = () => {
         deleteJournal({
             variables: {
                 journalId: journalId,
-                connections: [connectionId]
+                connections: connectionIds
             },
             onCompleted: () => {
                 onSuccessfulDelete();
