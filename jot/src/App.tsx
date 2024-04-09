@@ -9,6 +9,8 @@ import { AppIsLoggedInQuery, AppIsLoggedInQuery$data } from './__generated__/App
 import { UserContextProvider } from './components/UserContextProvider';
 import { hasValidSessionCookie } from './utils/authentication';
 import MainScreen from './screens/mainScreen';
+import DotSpinner from './icons/animated/DotSpinner';
+import MainScreenFallback from './components/screens/main/MainScreenFallback';
 
 const IsLoggedInQuery = graphql`
   query AppIsLoggedInQuery {
@@ -21,7 +23,6 @@ const Screen: React.FC = () => {
   const data = useLazyLoadQuery<AppIsLoggedInQuery>(
     IsLoggedInQuery,
     {},
-    { fetchPolicy: 'network-only' }
   );
   const [isLoggedIn, setIsLoggedIn] = useState(data.isLoggedIn || false);
 
@@ -36,7 +37,11 @@ const Screen: React.FC = () => {
     <div>
       {
         isLoggedIn ?
-          <MainScreen onLogoutCallback={onSuccessfulLogout} />
+          <Suspense fallback={
+            <MainScreenFallback />
+          }>
+            <MainScreen onLogoutCallback={onSuccessfulLogout} />
+          </Suspense>
           :
           <SplashScreen onLoginCallback={onSuccessfulLogin} />
       }
@@ -46,7 +51,10 @@ const Screen: React.FC = () => {
 
 function App() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={
+      <div className='w-screen h-screen flex items-center justify-center'>
+        <DotSpinner />
+      </div>}>
       <Screen />
     </Suspense>
   )

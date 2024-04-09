@@ -12,6 +12,7 @@ interface UserProfileInfoProps {
 
 const UserProfileInfo: React.FC<UserProfileInfoProps> = ({ hideDetails = false }) => {
     const userContext = useContext(UserContext)
+    console.log(userContext)
     const firstName = userContext.firstName.charAt(0).toUpperCase() + userContext.firstName.slice(1)
     const lastName = userContext.firstName.charAt(0).toUpperCase() + userContext.lastName.slice(1)
     return (

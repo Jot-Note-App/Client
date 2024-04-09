@@ -40,9 +40,7 @@ const MainScreen: React.FC<MainScreenProps> = ({ onLogoutCallback }) => {
         <UserContextProvider user={userContext}>
             <div className="min-h-screen max-h-screen min-w-screen flex">
                 <MainSidePanel onLogoutCallback={onLogoutCallback} selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
-                <Suspense fallback={<div>Loading...</div>}>
-                    <MainPanel selectedTab={selectedTab} />
-                </Suspense>
+                <MainPanel selectedTab={selectedTab} />
             </div>
         </UserContextProvider>
 

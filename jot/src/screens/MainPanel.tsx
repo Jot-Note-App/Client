@@ -45,6 +45,7 @@ import Tooltip from '../components/reusable/Tooltip';
 import OpenBookIcon from '../icons/OpenBookIcon';
 import GhostEmptyState from '../icons/empty_states/GhostEmptyState';
 import DotSpinner from '../icons/animated/DotSpinner';
+import JournalSidePanelFallback from '../components/screens/journals/JournalSidePanelFallback';
 interface MainPanelProps {
     selectedTab: MainPanelTab;
 }
@@ -819,7 +820,6 @@ const JournalSidePanel: React.FC<JournalSidePanelProps> = ({ entryId, journalId,
     const data = useLazyLoadQuery(mainPanelQuery, { first: 10, after: null, journalId: journalId, search: searchTerm }) as MainPanelQuery$data;
     const [createJournal, _isCreatingJournal] = useMutation(mainPanelCreateJournalMutation);
     const numJournals = data.user.entriesFeedJournals?.edges.length || 0
-    console.log("numJournals: ", numJournals)
     useEffect(
         function handleJournalsChange() {
             const numJournals = data.user.entriesFeedJournals?.edges.length || 0
@@ -843,7 +843,11 @@ const JournalSidePanel: React.FC<JournalSidePanelProps> = ({ entryId, journalId,
                     <div className="h-screen grid grid-flow-row w-72 border-x border-mediumGray" style={{ gridTemplateRows: 'auto auto 1fr', minWidth: '18rem' }}>
                         <JournalSelector fragment={data.user} onSelect={onJournalSelected} entryFeedJournalsConnectionId={data.user.entriesFeedJournals?.__id || ''} />
                         <EntriesFeedFilters onSearchSubmit={onSearchSubmit} onCreateEntry={onEntryCreated} journalId={journalId} />
-                        <Suspense fallback={<div>Loading...</div>}>
+                        <Suspense fallback={
+                            <div className="flex items-center justify-center ">
+                                <DotSpinner />
+                            </div>
+                        }>
                             {data.user.entriesFeedJournals?.edges?.[0]?.node &&
                                 <EntriesFeed
                                     fragment={data.user.entriesFeedJournals?.edges?.[0].node}
@@ -909,7 +913,7 @@ const Journals: React.FC = () => {
     return (
 
         <div className="w-full flex">
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<JournalSidePanelFallback />}>
                 <JournalSidePanel
                     entryId={currEntryId}
                     journalId={currJournalId}
@@ -920,6 +924,7 @@ const Journals: React.FC = () => {
                     onEntrySelected={setCurrEntryId}
                     onEmptyEntryFeed={() => setIsFeedEmpty(true)} />
             </Suspense>
+
             {
                 currEntryId ?
                     <Suspense fallback={<div className='w-full h-full flex items-center justify-center'>
