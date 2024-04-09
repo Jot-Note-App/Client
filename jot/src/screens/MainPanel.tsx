@@ -577,7 +577,7 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
         function updateEditorOnEntryChange() {
             clearTimer(timerRef)
             // TODO: this could be causing the the editor state to remain unchanged when switching to another entry
-            if (data.node && data.node?.__typename == 'Entry') {
+            if (data.node?.__typename == 'Entry') {
                 setTitle(data.node.title || null)
                 setEditorState(convertStringToEditorState(data.node.content));
                 if (!data.node.title) {
@@ -600,14 +600,6 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
         }, [titleRef, title]
     )
 
-    // useEffect(function handleCursorScrollIntoView() {
-    //     // const scrollAnchorNode = editorRef.current?.editor?.editorContainer;
-    //     // const isFocused = editorRef.current?.editor?.editor?.contains(document.activeElement);
-    //     // if (scrollAnchorNode && isFocused) {
-    //     //     console.log("scrolling")
-    //     //     scrollAnchorNode.scrollIntoView({ behavior: 'auto' });
-    //     // }
-    // }, [editorState.getCurrentContent()]);
     const handleScroll = () => {
         const minimumBottomPadding = 120;
         const editor = editorRef.current;
@@ -620,7 +612,6 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
 
                 if (scrolledFromBottom < minimumBottomPadding) {
                     const targetPosition = windowHeight - minimumBottomPadding;
-                    console.log("scrolling", top, targetPosition, scrolledFromBottom)
                     scrollContainerRef.current?.scrollBy({
                         top: top - targetPosition,
                         behavior: 'instant',
@@ -674,19 +665,19 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
                             <div className="text-center">
                                 {data.node.journal.name} / <span className='text-offBlack'>{data.node.title || "Untitled"} </span>
                             </div>
-                            <div className="grid grid-flow-col justify-end items-start">
+                            <div className="flex justify-end items-start">
                                 {/* TODO: replace SaveIcon with loading indicator when saving*/}
+
                                 <Tooltip
-                                    text='Read-only: enables links'
-                                    offsetX={15}
+                                    text='Read-only: links enabled'
                                 >
                                     <div className={`flex items-center justify-center hover:text-main transition-colors duration-300 hover:cursor-pointer w-14 h-10  ${readOnly && 'text-main'}`} onClick={() => { setReadOnly(prev => !prev) }}>
                                         <OpenBookIcon />
                                     </div>
                                 </Tooltip>
+
                                 <Tooltip
-                                    text='Save note'
-                                    offsetX={15}
+                                    text='Save'
                                 >
                                     <div className="flex items-center justify-center hover:text-main transition-colors duration-300 hover:cursor-pointer w-14 h-10" onClick={() => saveEditorState()}>
                                         <SaveIcon />
@@ -694,8 +685,7 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
                                 </Tooltip>
 
                                 <Tooltip
-                                    text='Delete note'
-                                    offsetX={15}
+                                    text='Delete'
                                 >
                                     <div className="flex items-center justify-center hover:text-main transition-colors duration-300 hover:cursor-pointer w-14 h-10" onClick={() => setIsDeleteEntryModalOpen(true)}>
                                         <TrashIcon />
@@ -725,7 +715,7 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
                                         e.stopPropagation()
                                     }}>
                                     <textarea ref={titleRef}
-                                        className={`hover:cursor-text max-h-full resize-none overflow-auto appearance-none border-none focus:outline-none text-title w-full pb-2 ${title ? "text-black" : "text-darkGray"} `}
+                                        className={`hover:cursor-text bg-transparent max-h-full resize-none overflow-auto appearance-none border-none focus:outline-none text-title w-full pb-2 ${title ? "text-black" : "text-darkGray"} `}
                                         placeholder={"Untitled"}
                                         onClick={e => e.stopPropagation()}
                                         onChange={handleTitleChange}
