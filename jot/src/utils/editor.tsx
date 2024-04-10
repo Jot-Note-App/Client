@@ -47,37 +47,8 @@ const removeCharsBefore = (editorState: EditorState, numChars: number): EditorSt
 export const handleEditorKeyCommand = (e: React.KeyboardEvent<HTMLDivElement>, editorState: EditorState): EditorState => {
     if (e.code == 'Tab' && e.shiftKey) {
         e.preventDefault();
-        const currentContent = editorState.getCurrentContent();
-        const currentSelection = editorState.getSelection();
-        const startKey = currentSelection.getStartKey();
-        const startOffset = currentSelection.getStartOffset();
-        const blockNode = currentContent.getBlockForKey(startKey);
-        const textBeforeSelection = blockNode.getText().slice(0, startOffset);
-        if (textBeforeSelection.endsWith('\t')) {
-            return removeCharsBefore(editorState, 1);
-        }
-        // Alternatively, remove up to 4 spaces to the left of the selection
-        var spaces = '    '
-        while (spaces.length > 0) {
-            if (textBeforeSelection.endsWith(spaces)) {
-                // There is a tab character to the left of the selection
-                return removeCharsBefore(editorState, spaces.length);
-            }
-            spaces = spaces.slice(0, -1)
-        }
     } else if (e.code == 'Tab') {
-        // Tab key
         e.preventDefault();
-        return EditorState.push(
-            editorState,
-            Modifier.insertText(
-                editorState.getCurrentContent(),
-                editorState.getSelection(),
-                '\t'
-            ),
-            'insert-characters'
-        );
-
     }
     return editorState;
 }

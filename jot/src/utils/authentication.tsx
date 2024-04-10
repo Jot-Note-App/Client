@@ -25,3 +25,8 @@ export const validateCredentials = (credentials: string): boolean => {
     var expired = isExpired(credentials);
     return !expired && validIssuers.has(decodedToken.iss) && decodedToken.aud == import.meta.env.VITE_CLIENT_ID;
 };
+
+export const getProfilePicture = (credentials: string): string => {
+    var decodedToken: CredentialPayload = decodeToken(credentials) as CredentialPayload;
+    return decodedToken.picture;
+}

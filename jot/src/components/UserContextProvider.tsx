@@ -14,8 +14,8 @@ interface UserContextProviderProps {
 
 const UserContext = React.createContext<UserContext>({
     id: "",
-    firstName: "",
-    lastName: "",
+    firstName: " ",
+    lastName: " ",
     email: ""
 });
 

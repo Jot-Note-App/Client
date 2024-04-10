@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<675ebd56f8518b25e27035d383193a73>>
+ * @generated SignedSource<<853530ef1b9ec647de1d95ea3333546e>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -12,12 +12,6 @@ import { ConcreteRequest, Query } from 'relay-runtime';
 export type AppIsLoggedInQuery$variables = Record<PropertyKey, never>;
 export type AppIsLoggedInQuery$data = {
   readonly isLoggedIn: boolean;
-  readonly user: {
-    readonly email: string;
-    readonly firstName: string;
-    readonly id: string;
-    readonly lastName: string;
-  };
 };
 export type AppIsLoggedInQuery = {
   response: AppIsLoggedInQuery$data;
@@ -31,45 +25,6 @@ var v0 = [
     "args": null,
     "kind": "ScalarField",
     "name": "isLoggedIn",
-    "storageKey": null
-  },
-  {
-    "alias": null,
-    "args": null,
-    "concreteType": "User",
-    "kind": "LinkedField",
-    "name": "user",
-    "plural": false,
-    "selections": [
-      {
-        "alias": null,
-        "args": null,
-        "kind": "ScalarField",
-        "name": "id",
-        "storageKey": null
-      },
-      {
-        "alias": null,
-        "args": null,
-        "kind": "ScalarField",
-        "name": "firstName",
-        "storageKey": null
-      },
-      {
-        "alias": null,
-        "args": null,
-        "kind": "ScalarField",
-        "name": "lastName",
-        "storageKey": null
-      },
-      {
-        "alias": null,
-        "args": null,
-        "kind": "ScalarField",
-        "name": "email",
-        "storageKey": null
-      }
-    ],
     "storageKey": null
   }
 ];
@@ -91,16 +46,16 @@ return {
     "selections": (v0/*: any*/)
   },
   "params": {
-    "cacheID": "306342e0bfe68606fef3c0d267985b18",
+    "cacheID": "db83fa3674fc81605199f4defff8e084",
     "id": null,
     "metadata": {},
     "name": "AppIsLoggedInQuery",
     "operationKind": "query",
-    "text": "query AppIsLoggedInQuery {\n  isLoggedIn\n  user {\n    id\n    firstName\n    lastName\n    email\n  }\n}\n"
+    "text": "query AppIsLoggedInQuery {\n  isLoggedIn\n}\n"
   }
 };
 })();
 
-(node as any).hash = "1bd5a6f24d0ce1c2ccb39a651d989011";
+(node as any).hash = "3af2fc82ff9b617c05beec1a63d058f9";
 
 export default node;

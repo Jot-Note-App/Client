@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<e4553957fd131ce0a7874a14aaca4744>>
+ * @generated SignedSource<<fcd2372c6f79f00fec7fa57d69077d1e>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -19,6 +19,7 @@ export type MainPanelQuery$variables = {
 export type MainPanelQuery$data = {
   readonly user: {
     readonly entriesFeedJournals: {
+      readonly __id: string;
       readonly edges: ReadonlyArray<{
         readonly node: {
           readonly id: string;
@@ -92,42 +93,54 @@ v6 = [
     "variableName": "search"
   }
 ],
-v7 = [
+v7 = {
+  "kind": "ClientExtension",
+  "selections": [
+    {
+      "alias": null,
+      "args": null,
+      "kind": "ScalarField",
+      "name": "__id",
+      "storageKey": null
+    }
+  ]
+},
+v8 = [
   {
     "kind": "Literal",
     "name": "first",
     "value": 100
   }
 ],
-v8 = {
+v9 = {
   "alias": null,
   "args": null,
   "kind": "ScalarField",
   "name": "name",
   "storageKey": null
 },
-v9 = {
+v10 = {
   "alias": null,
   "args": null,
   "kind": "ScalarField",
   "name": "__typename",
   "storageKey": null
 },
-v10 = {
+v11 = {
   "alias": null,
   "args": null,
   "kind": "ScalarField",
   "name": "cursor",
   "storageKey": null
 },
-v11 = {
+v12 = {
   "alias": null,
   "args": null,
   "kind": "ScalarField",
   "name": "endCursor",
   "storageKey": null
 },
-v12 = {
+v13 = {
   "alias": null,
   "args": null,
   "kind": "ScalarField",
@@ -195,7 +208,8 @@ return {
                   }
                 ],
                 "storageKey": null
-              }
+              },
+              (v7/*: any*/)
             ],
             "storageKey": null
           }
@@ -228,7 +242,7 @@ return {
           (v4/*: any*/),
           {
             "alias": "journalSelectorJournals",
-            "args": (v7/*: any*/),
+            "args": (v8/*: any*/),
             "concreteType": "JournalConnection",
             "kind": "LinkedField",
             "name": "journals",
@@ -251,7 +265,7 @@ return {
                     "plural": false,
                     "selections": [
                       (v4/*: any*/),
-                      (v8/*: any*/),
+                      (v9/*: any*/),
                       {
                         "alias": null,
                         "args": null,
@@ -259,11 +273,11 @@ return {
                         "name": "ordinal",
                         "storageKey": null
                       },
-                      (v9/*: any*/)
+                      (v10/*: any*/)
                     ],
                     "storageKey": null
                   },
-                  (v10/*: any*/)
+                  (v11/*: any*/)
                 ],
                 "storageKey": null
               },
@@ -275,29 +289,18 @@ return {
                 "name": "pageInfo",
                 "plural": false,
                 "selections": [
-                  (v11/*: any*/),
-                  (v12/*: any*/)
+                  (v12/*: any*/),
+                  (v13/*: any*/)
                 ],
                 "storageKey": null
               },
-              {
-                "kind": "ClientExtension",
-                "selections": [
-                  {
-                    "alias": null,
-                    "args": null,
-                    "kind": "ScalarField",
-                    "name": "__id",
-                    "storageKey": null
-                  }
-                ]
-              }
+              (v7/*: any*/)
             ],
             "storageKey": "journals(first:100)"
           },
           {
             "alias": "journalSelectorJournals",
-            "args": (v7/*: any*/),
+            "args": (v8/*: any*/),
             "filters": null,
             "handle": "connection",
             "key": "MainPanelJournalSelectorFragment_journalSelectorJournals",
@@ -329,7 +332,7 @@ return {
                     "plural": false,
                     "selections": [
                       (v4/*: any*/),
-                      (v8/*: any*/),
+                      (v9/*: any*/),
                       {
                         "alias": null,
                         "args": (v6/*: any*/),
@@ -346,8 +349,8 @@ return {
                             "name": "pageInfo",
                             "plural": false,
                             "selections": [
-                              (v12/*: any*/),
-                              (v11/*: any*/)
+                              (v13/*: any*/),
+                              (v12/*: any*/)
                             ],
                             "storageKey": null
                           },
@@ -396,11 +399,11 @@ return {
                                     "name": "content",
                                     "storageKey": null
                                   },
-                                  (v9/*: any*/)
+                                  (v10/*: any*/)
                                 ],
                                 "storageKey": null
                               },
-                              (v10/*: any*/)
+                              (v11/*: any*/)
                             ],
                             "storageKey": null
                           }
@@ -423,7 +426,8 @@ return {
                   }
                 ],
                 "storageKey": null
-              }
+              },
+              (v7/*: any*/)
             ],
             "storageKey": null
           }
@@ -443,6 +447,6 @@ return {
 };
 })();
 
-(node as any).hash = "20d644780274644d5382992db6b5fb6d";
+(node as any).hash = "1300a3692bd784fc9359ce16f615ca6a";
 
 export default node;

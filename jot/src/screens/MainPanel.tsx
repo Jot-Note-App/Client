@@ -15,7 +15,7 @@ import { UserContext } from '../components/UserContextProvider';
 import { MainPanelCreateJournalMutation$data } from '../__generated__/MainPanelCreateJournalMutation.graphql';
 import AddCircleIcon from '../icons/AddCircleIcon';
 import { MainPanelCreateEntryMutation, MainPanelCreateEntryMutation$data } from '../__generated__/MainPanelCreateEntryMutation.graphql';
-import { ContentBlock, ContentState, EditorState, Modifier, RichUtils, convertFromRaw, convertToRaw, getDefaultKeyBinding } from 'draft-js';
+import { ContentBlock, ContentState, EditorState, Modifier, RichUtils, convertFromRaw, convertToRaw, getDefaultKeyBinding, getVisibleSelectionRect } from 'draft-js';
 import Editor from '@draft-js-plugins/editor';
 import createToolbarPlugin, { Separator } from '@draft-js-plugins/static-toolbar';
 import createLinkifyPlugin from '@draft-js-plugins/linkify';
@@ -43,6 +43,9 @@ import AddIcon from '../icons/AddIcon';
 import Popup from 'reactjs-popup';
 import Tooltip from '../components/reusable/Tooltip';
 import OpenBookIcon from '../icons/OpenBookIcon';
+import GhostEmptyState from '../icons/empty_states/GhostEmptyState';
+import DotSpinner from '../icons/animated/DotSpinner';
+import JournalSidePanelFallback from '../components/screens/journals/JournalSidePanelFallback';
 interface MainPanelProps {
     selectedTab: MainPanelTab;
 }
@@ -105,9 +108,10 @@ const JournalSelectorRow: React.FC<JournalSelectorRowProps> = ({ id, isSelected,
 interface JournalSelectorProps {
     fragment: MainPanelJournalSelectorFragment$key;
     onSelect: (journalId: string | null) => void;
+    entryFeedJournalsConnectionId: string;
 }
 
-const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect }) => {
+const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect, entryFeedJournalsConnectionId }) => {
     const data = useFragment(
         journalSelectorFragment,
         fragment,
@@ -122,9 +126,10 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect })
     const handleJournalSelected = useCallback((id: string | null) => {
         setSelectedId(id)
         onSelect(id)
+        setIsOpen(false)
     }, [])
     const selectFirstJournal = useCallback(() => {
-        handleJournalSelected(data.journalSelectorJournals?.edges[0].node.id || null)
+        handleJournalSelected(data.journalSelectorJournals?.edges[0]?.node.id || null)
     }, [data.journalSelectorJournals])
     useEffect(
         function handleInitialJournalSelection() {
@@ -197,7 +202,7 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect })
                     journalId={selectedId || ''}
                     name={selectedJournal?.node.name || ''}
                     ordinal={selectedJournal?.node.ordinal || 0}
-                    connectionId={data.journalSelectorJournals?.__id || ''}
+                    connectionIds={[data.journalSelectorJournals?.__id || '', entryFeedJournalsConnectionId]}
                     onDelete={onDeleteJournalComplete}
                 />
             </div>
@@ -207,7 +212,7 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect })
                         <Search onSearchChange={setSearchTerm} />
                     </div>
                     <FloatingList elementsRef={elementsRef} labelsRef={labelsRef}>
-                        <div className="min-h-48 max-h-72 overflow-y-scroll">
+                        <div className="min-h-48 max-h-72 overflow-y-auto" >
                             {options.length > 0 ? options.map((option) => (
                                 <JournalSelectorRow key={option.id} id={option.id} isSelected={option.id === selectedId} label={option.label} onSelect={handleJournalSelected} />)) :
                                 <div className="grid grid-flow-row items-center justify-center text-mediumGray p-5">
@@ -409,7 +414,8 @@ const EntriesFeed: React.FC<EntriesFeedProps> = ({ fragment, onSelectEntry, onEm
 
     useEffect(
         function handleEmptyFeed() {
-            if (data.entries?.edges.length == 0) {
+            var numEntries = data.entries?.edges.length || 0
+            if (numEntries == 0) {
                 onEmptyFeed()
             }
         }, [data.entries])
@@ -499,7 +505,8 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
     const [editorState, setEditorState] = useState(convertStringToEditorState(content));
     const editorRef = useRef<Editor | null>(null);
     const editorContainerRef = useRef<HTMLDivElement | null>(null);
-    const titleRef = useRef<HTMLInputElement | null>(null);
+    const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+    const titleRef = useRef<HTMLTextAreaElement | null>(null);
     const timerRef = useRef<number | null>(null);
     const [isToolbarVisible, setIsToolbarVisible] = useState(false)
     const [isDeleteEntryModalOpen, setIsDeleteEntryModalOpen] = useState(false);
@@ -576,7 +583,7 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
         function updateEditorOnEntryChange() {
             clearTimer(timerRef)
             // TODO: this could be causing the the editor state to remain unchanged when switching to another entry
-            if (data.node && data.node?.__typename == 'Entry') {
+            if (data.node?.__typename == 'Entry') {
                 setTitle(data.node.title || null)
                 setEditorState(convertStringToEditorState(data.node.content));
                 if (!data.node.title) {
@@ -585,10 +592,40 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
             }
         }, [entryId])
 
-    const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
         clearTimer(timerRef)
         setTitle(e.target.value);
     }, [timerRef])
+
+    useEffect(
+        function handleTitleResize() {
+            // First reset the height to 0px so that the scrollHeight can be calculated accurately 
+            titleRef.current?.style.setProperty('height', `0px`)
+            const scrollHeight = titleRef.current?.scrollHeight || 0
+            titleRef.current?.style.setProperty('height', `${scrollHeight}px`)
+        }, [titleRef, title]
+    )
+
+    const handleScroll = () => {
+        const minimumBottomPadding = 120;
+        const editor = editorRef.current;
+        if (editor) {
+            const selectionRect = getVisibleSelectionRect(window);
+            if (selectionRect) {
+                const { top, bottom } = selectionRect;
+                const windowHeight = window.innerHeight;
+                const scrolledFromBottom = windowHeight - bottom;
+
+                if (scrolledFromBottom < minimumBottomPadding) {
+                    const targetPosition = windowHeight - minimumBottomPadding;
+                    scrollContainerRef.current?.scrollBy({
+                        top: top - targetPosition,
+                        behavior: 'instant',
+                    });
+                }
+            }
+        }
+    };
 
     const handleEditorStateChange = useCallback((editorState: EditorState) => {
         if (data.node) {
@@ -598,6 +635,7 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
             }, 3000);
             timerRef.current = timer;
         }
+        handleScroll()
         setEditorState(editorState);
     }, [data, timerRef, saveEditorState]);
 
@@ -619,50 +657,57 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
         [editorState]
     );
 
+    const handleTextAreaEnterKey = (event: React.KeyboardEvent) => {
+        if (event.code == 'Enter') {
+            editorRef.current?.focus();
+            event.preventDefault();
+        }
+    };
 
     return (
         <div className="w-full h-full flex justify-center">
             {
                 data.node && data.node.__typename == "Entry" ?
-                    <div className="grid grid-flow-row min-w-full" style={{ gridTemplateRows: 'auto 1fr' }}>
-                        <div className=' grid grid-flow-col px-20 pt-4 pb-1 text-small text-darkGray ' style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
+                    <div className="grid grid-flow-row min-w-full" style={{ gridTemplateRows: 'auto auto 1fr' }}>
+
+                        <div className=' grid grid-flow-col px-20 pt-4 pb-1 text-small text-darkGray ' style={{ gridTemplateColumns: '1fr 1fr 1fr' }} >
                             <div className="flex flex-col ">
                                 <div >Last Edit Saved: {convertTimeStringtoFormattedDateString(data.node.updatedAt, true)}</div>
                                 <div >Created: {convertTimeStringtoFormattedDateString(data.node.createdAt, true)}</div>
                             </div>
+
                             <div className="text-center">
                                 {data.node.journal.name} / <span className='text-offBlack'>{data.node.title || "Untitled"} </span>
                             </div>
-                            <div className="grid grid-flow-col justify-end items-center">
+
+                            <div className="flex flex-row justify-end">
                                 {/* TODO: replace SaveIcon with loading indicator when saving*/}
                                 <Tooltip
-                                    text='Read-only: enables links'
-                                    offsetX={15}
+                                    text='Read-only: links enabled'
                                 >
-                                    <div className={`flex items-center justify-center hover:text-main transition-colors duration-300 hover:cursor-pointer w-14  ${readOnly && 'text-main'}`} onClick={() => { setReadOnly(prev => !prev) }}>
+                                    <div className={`flex items-center justify-center hover:text-main transition-colors duration-300 hover:cursor-pointer w-14 h-10  ${readOnly && 'text-main'}`} onClick={() => { setReadOnly(prev => !prev) }}>
                                         <OpenBookIcon />
                                     </div>
                                 </Tooltip>
+
                                 <Tooltip
-                                    text='Save note'
-                                    offsetX={15}
+                                    text='Save'
                                 >
-                                    <div className="flex items-center justify-center hover:text-main transition-colors duration-300 hover:cursor-pointer w-14" onClick={() => saveEditorState()}>
+                                    <div className="flex items-center justify-center hover:text-main transition-colors duration-300 hover:cursor-pointer w-14 h-10" onClick={() => saveEditorState()}>
                                         <SaveIcon />
                                     </div>
                                 </Tooltip>
 
                                 <Tooltip
-                                    text='Delete note'
-                                    offsetX={15}
+                                    text='Delete'
                                 >
-                                    <div className="flex items-center justify-center hover:text-main transition-colors duration-300 hover:cursor-pointer w-14" onClick={() => setIsDeleteEntryModalOpen(true)}>
+                                    <div className="flex items-center justify-center hover:text-main transition-colors duration-300 hover:cursor-pointer w-14 h-10" onClick={() => setIsDeleteEntryModalOpen(true)}>
                                         <TrashIcon />
                                     </div>
                                 </Tooltip>
                             </div>
                         </div>
-                        <div className='overflow-y-scroll flex justify-center text-body'>
+                        <div ref={scrollContainerRef} className='overflow-y-scroll flex justify-center text-body'>
                             <div className={`w-9/12 h-full max-h-full ${!readOnly && 'hover:cursor-text'}`}
                                 style={{ maxWidth: '50rem' }}
                                 onClick={(e) => {
@@ -674,20 +719,23 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
                                     e.stopPropagation();
                                 }}>
                                 <div className='h-10 hover:cursor-default' onClick={e => e.stopPropagation()} />
-                                <form onSubmit={e => {
-                                    e.preventDefault();
-                                    if (editorRef.current) {
-                                        editorRef.current.focus();
-                                    }
-                                    e.stopPropagation()
-                                }}>
-                                    <input ref={titleRef}
-                                        className={`hover:cursor-text appearance-none border-none focus:outline-none text-title w-full pb-2 ${title ? "text-black" : "text-darkGray"} `}
+                                <form
+                                    className='max-h-full'
+                                    onSubmit={e => {
+                                        e.preventDefault();
+                                        if (editorRef.current) {
+                                            editorRef.current.focus();
+                                        }
+                                        e.stopPropagation()
+                                    }}>
+                                    <textarea ref={titleRef}
+                                        className={`hover:cursor-text bg-transparent max-h-full resize-none overflow-auto appearance-none border-none focus:outline-none text-title w-full pb-2 ${title ? "text-black" : "text-darkGray"} `}
                                         placeholder={"Untitled"}
                                         onClick={e => e.stopPropagation()}
                                         onChange={handleTitleChange}
                                         value={title || ''}
                                         disabled={readOnly}
+                                        onKeyDown={handleTextAreaEnterKey}
                                     />
                                 </form>
                                 <div ref={editorContainerRef} onClick={e => e.stopPropagation()}>
@@ -764,6 +812,7 @@ query MainPanelQuery($first,: Int!, $after: ID, $journalId: ID $search: String){
     id
     ...MainPanelJournalSelectorFragment
     entriesFeedJournals: journals(first: 1, id: $journalId){
+        __id
         edges {
             node {
                 id
@@ -777,21 +826,63 @@ query MainPanelQuery($first,: Int!, $after: ID, $journalId: ID $search: String){
 
 const JournalSidePanel: React.FC<JournalSidePanelProps> = ({ entryId, journalId, searchTerm, onJournalSelected, onSearchSubmit, onEntryCreated, onEntrySelected, onEmptyEntryFeed }) => {
     const data = useLazyLoadQuery(mainPanelQuery, { first: 10, after: null, journalId: journalId, search: searchTerm }) as MainPanelQuery$data;
+    const [createJournal, _isCreatingJournal] = useMutation(mainPanelCreateJournalMutation);
+    const numJournals = data.user.entriesFeedJournals?.edges.length || 0
+    useEffect(
+        function handleJournalsChange() {
+            const numJournals = data.user.entriesFeedJournals?.edges.length || 0
+            if (numJournals == 0) {
+                onEmptyEntryFeed()
+            }
+        }, [data.user.entriesFeedJournals])
+
+    const onCreateJournalComplete = useCallback((response: {}, _errors: PayloadError[] | null) => {
+        const res = response as MainPanelCreateJournalMutation$data;
+        if (res.createJournal.__typename == 'CreateJournalMutationSuccess') {
+            const newJournal = res.createJournal.journalEdge.node
+            onJournalSelected(newJournal.id)
+        }
+
+    }, []);
     return (
-        <div className="h-screen grid grid-flow-row w-72 border-x border-mediumGray" style={{ gridTemplateRows: 'auto auto 1fr', minWidth: '18rem' }}>
-            <JournalSelector fragment={data.user} onSelect={onJournalSelected} />
-            <EntriesFeedFilters onSearchSubmit={onSearchSubmit} onCreateEntry={onEntryCreated} journalId={journalId} />
-            <Suspense fallback={<div>Loading...</div>}>
-                {data.user.entriesFeedJournals?.edges?.[0].node &&
-                    <EntriesFeed
-                        fragment={data.user.entriesFeedJournals?.edges?.[0].node}
-                        onSelectEntry={onEntrySelected}
-                        selectedEntryId={entryId}
-                        selectedJournalId={journalId}
-                        onEmptyFeed={onEmptyEntryFeed} />
-                }
-            </Suspense>
-        </div>
+        <>
+            {
+                numJournals > 0 ?
+                    <div className="h-screen grid grid-flow-row w-72 border-x border-mediumGray" style={{ gridTemplateRows: 'auto auto 1fr', minWidth: '18rem' }}>
+                        <JournalSelector fragment={data.user} onSelect={onJournalSelected} entryFeedJournalsConnectionId={data.user.entriesFeedJournals?.__id || ''} />
+                        <EntriesFeedFilters onSearchSubmit={onSearchSubmit} onCreateEntry={onEntryCreated} journalId={journalId} />
+                        <Suspense fallback={
+                            <div className="flex items-center justify-center ">
+                                <DotSpinner />
+                            </div>
+                        }>
+                            {data.user.entriesFeedJournals?.edges?.[0]?.node &&
+                                <EntriesFeed
+                                    fragment={data.user.entriesFeedJournals?.edges?.[0].node}
+                                    onSelectEntry={onEntrySelected}
+                                    selectedEntryId={entryId}
+                                    selectedJournalId={journalId}
+                                    onEmptyFeed={onEmptyEntryFeed} />
+                            }
+                        </Suspense>
+                    </div>
+                    : <div className="w-72 border-x border-mediumGray h-full flex flex-col gap-2 items-center justify-center text-mediumGray" style={{ minWidth: '18rem' }}>
+                        <div className="text-h4">No notebooks</div>
+                        <div className="text-body font-semibold text-main hover:cursor-pointer"
+                            onClick={() => {
+                                createJournal({
+                                    variables: {
+                                        name: 'New Notebook',
+                                        userId: data.user.id,
+                                        connections: [],
+                                    },
+                                    onCompleted: onCreateJournalComplete,
+                                })
+                            }}>
+                            Create a notebook</div>
+                    </div>
+            }
+        </>
     );
 }
 
@@ -830,7 +921,7 @@ const Journals: React.FC = () => {
     return (
 
         <div className="w-full flex">
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<JournalSidePanelFallback />}>
                 <JournalSidePanel
                     entryId={currEntryId}
                     journalId={currJournalId}
@@ -841,15 +932,21 @@ const Journals: React.FC = () => {
                     onEntrySelected={setCurrEntryId}
                     onEmptyEntryFeed={() => setIsFeedEmpty(true)} />
             </Suspense>
+
             {
                 currEntryId ?
-                    <Suspense fallback={<div>Loading...</div>}>
+                    <Suspense fallback={<div className='w-full h-full flex items-center justify-center'>
+                        <DotSpinner />
+                    </div>}>
                         <EntryEditor entryId={currEntryId} onEntryDeleted={onEntryDeleted} />
                     </Suspense>
                     : !isFeedEmpty ?
-                        <div>Loading...</div>
+                        <div className='w-full h-full flex items-center justify-center'>
+                            <DotSpinner />
+                        </div>
                         :
                         <div className="w-full h-full flex flex-col gap-2 items-center justify-center text-mediumGray">
+                            <GhostEmptyState />
                             <div className="text-h3">No notes to show</div>
                             <div className="text-lg">Create a note in the side panel to get started!</div>
                         </div>

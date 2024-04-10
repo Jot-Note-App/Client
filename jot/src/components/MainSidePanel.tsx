@@ -45,7 +45,6 @@ const MainSidePanel: React.FC<MainSidePanelProps> = ({ onLogoutCallback, selecte
                 <div className="mt-4">
                     <Tooltip
                         text='Notebooks'
-                        offsetX={0}
                     >
                         <div className={"bg-mainDark rounded p-2 hover:cursor-pointer text-secondary"}>
                             <div className="flex gap-2 items-center justify-center">

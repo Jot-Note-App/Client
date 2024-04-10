@@ -19,6 +19,27 @@
 
 }
 
+/* Spinner Styles */
+.spinner {
+  width: 56px;
+  height: 56px;
+  --c: radial-gradient(farthest-side, #9a9a9a 92%, #0000);
+  background: var(--c) 50% 0,
+    var(--c) 50% 100%,
+    var(--c) 100% 50%,
+    var(--c) 0 50%;
+  background-size: 13.4px 13.4px;
+  background-repeat: no-repeat;
+  animation: spinner-kh173p 1s infinite;
+}
+
+@keyframes spinner-kh173p {
+  to {
+    transform: rotate(.5turn);
+  }
+}
+
+
 /* ReactJS Popup Styles */
 .popup-content {
   @apply bg-white rounded-md border border-faintGray overflow-hidden;
@@ -62,11 +83,11 @@
 
 /* DraftJS Toolbar Styles */
 .bi09khh {
-  @apply flex items-center;
+  @apply flex items-center outline-none;
 }
 
 .bc4rxid {
-  @apply flex items-center justify-center h-10 w-10 border-0 text-darkGray text-lg;
+  @apply outline-none flex items-center justify-center h-10 w-10 border-0 text-darkGray text-lg;
 }
 
 .bc4rxid:hover,

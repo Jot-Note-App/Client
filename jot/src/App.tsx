@@ -1,32 +1,30 @@
-import { useState } from 'react'
+import React, { Suspense, useEffect, useState } from 'react'
 import './App.css'
 import './index.css'
-import MainScreen from './screens/MainScreen';
+
 import SplashScreen from './screens/SplashScreen';
 import { graphql } from 'relay-runtime';
-import { useLazyLoadQuery } from "react-relay";
-import { AppIsLoggedInQuery } from './__generated__/AppIsLoggedInQuery.graphql'
+import { useLazyLoadQuery } from "react-relay/hooks";
+import { AppIsLoggedInQuery, AppIsLoggedInQuery$data } from './__generated__/AppIsLoggedInQuery.graphql'
 import { UserContextProvider } from './components/UserContextProvider';
+import MainScreen from './screens/MainScreen';
+import DotSpinner from './icons/animated/DotSpinner';
+import MainScreenFallback from './components/screens/main/MainScreenFallback';
 
 const IsLoggedInQuery = graphql`
   query AppIsLoggedInQuery {
     isLoggedIn
-    user {
-      id
-      firstName
-      lastName
-      email
-    }
   }
 `;
 
-function App() {
+const Screen: React.FC = () => {
+  // If the user is not logged in, this request will result in a 403 error, causing data.isLoggedIn to be undefined
   const data = useLazyLoadQuery<AppIsLoggedInQuery>(
     IsLoggedInQuery,
     {},
   );
-  //TODO: Check if user is already logged in by validating auth cookie and set state accordingly
-  const [isLoggedIn, setIsLoggedIn] = useState(data.isLoggedIn);
+  const [isLoggedIn, setIsLoggedIn] = useState(data.isLoggedIn || false);
+
   const onSuccessfulLogin = () => {
     setIsLoggedIn(true)
   }
@@ -34,21 +32,30 @@ function App() {
   const onSuccessfulLogout = () => {
     setIsLoggedIn(false)
   }
-  const userContext = {
-    id: data.user.id,
-    firstName: data.user.firstName,
-    lastName: data.user.lastName,
-    email: data.user.email
-  }
   return (
     <div>
       {
-        isLoggedIn ? <UserContextProvider user={userContext}>
-          <MainScreen onLogoutCallback={onSuccessfulLogout} />
-        </UserContextProvider> :
+        isLoggedIn ?
+          <Suspense fallback={
+            <MainScreenFallback />
+          }>
+            <MainScreen onLogoutCallback={onSuccessfulLogout} />
+          </Suspense>
+          :
           <SplashScreen onLoginCallback={onSuccessfulLogin} />
       }
     </div>
+  )
+}
+
+function App() {
+  return (
+    <Suspense fallback={
+      <div className='w-screen h-screen flex items-center justify-center'>
+        <DotSpinner />
+      </div>}>
+      <Screen />
+    </Suspense>
   )
 }
 
