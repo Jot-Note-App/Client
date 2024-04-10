@@ -1,4 +1,3 @@
-# Sample workflow for building and deploying a Jekyll site to GitHub Pages
 name: Deploy with Github Pages
 
 on:
@@ -34,12 +33,14 @@ jobs:
           node-version: '16'
 
   build:
+    needs: setup
     runs-on: ubuntu-latest
     steps:
       - name: Build
         run: pnpm build
 
   deploy:
+    needs : build
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to GitHub Pages
