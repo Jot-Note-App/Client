@@ -7,9 +7,9 @@ import { graphql } from 'relay-runtime';
 import { useLazyLoadQuery } from "react-relay/hooks";
 import { AppIsLoggedInQuery, AppIsLoggedInQuery$data } from './__generated__/AppIsLoggedInQuery.graphql'
 import { UserContextProvider } from './components/UserContextProvider';
-import MainScreen from './screens/MainScreen';
 import DotSpinner from './icons/animated/DotSpinner';
 import MainScreenFallback from './components/screens/main/MainScreenFallback';
+import MainScreen from './screens/mainScreen';
 
 const IsLoggedInQuery = graphql`
   query AppIsLoggedInQuery {
