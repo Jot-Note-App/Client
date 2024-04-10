@@ -119,7 +119,7 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect, e
     const [isOpen, setIsOpen] = useState(false);
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState<string | null>(null);
-    const lastJournalKey = 'lastJournalId'
+    const lastJournalKey = `User${userContext.id}-lastJournalId`
     const selectedJournal = data.journalSelectorJournals?.edges.find((edge) => edge.node.id == selectedId)
     const handleJournalSelected = useCallback((id: string | null) => {
         setSelectedId(id)
@@ -380,7 +380,7 @@ const entriesFeedFragment = graphql`
 
 interface EntriesFeedProps {
     fragment: MainPanelEntriesFeedFragment$key;
-    onSelectEntry: (id: string) => void;
+    onSelectEntry: (id: string | null) => void;
     onEmptyFeed: () => void;
     selectedEntryId: string | null;
     selectedJournalId: string | null;
@@ -390,8 +390,8 @@ const EntriesFeed: React.FC<EntriesFeedProps> = ({ fragment, onSelectEntry, onEm
     const { data, loadNext, hasNext } = usePaginationFragment(entriesFeedFragment, fragment)
     const feedContainerRef = useRef<HTMLDivElement | null>(null)
     const selectFirstEntry = useCallback(() => {
-        const entryId = data.entries?.edges[0]?.node.id
-        if (entryId) {
+        const entryId = data.entries?.edges[0]?.node.id || null
+        if (entryId || selectedJournalId) {
             onSelectEntry(entryId)
         }
     }, [data.entries])
@@ -800,7 +800,7 @@ interface JournalSidePanelProps {
     onJournalSelected: (journalId: string | null) => void;
     onSearchSubmit: (search: string) => void;
     onEntryCreated: (entryId: string) => void;
-    onEntrySelected: (entryId: string) => void;
+    onEntrySelected: (entryId: string | null) => void;
     onEmptyEntryFeed: () => void;
 }
 
