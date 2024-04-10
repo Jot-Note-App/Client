@@ -1,51 +1,49 @@
-import React, { Suspense, useContext } from 'react';
-import { MainPanelTab } from '../enums/MainPanelTab';
-import { graphql, PayloadError, FragmentRef, ConnectionHandler } from 'relay-runtime';
-import { loadQuery, useFragment, useLazyLoadQuery, useMutation, usePaginationFragment } from 'react-relay';
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useFloating, useInteractions, FloatingList, useListNavigation, useTypeahead, useClick, useDismiss, useRole } from '@floating-ui/react';
-import { MainPanelQuery$data } from '../__generated__/MainPanelQuery.graphql';
-import { MainPanelEntriesFeedFragment$data, MainPanelEntriesFeedFragment$key } from '../__generated__/MainPanelEntriesFeedFragment.graphql';
-import { MainPanelJournalSelectorFragment$data, MainPanelJournalSelectorFragment$key } from '../__generated__/MainPanelJournalSelectorFragment.graphql';
-import ArrowIcon from '../icons/ArrowIcon';
-import Search from '../components/Search';
-import { MainPanelEntryRowFragment$data, MainPanelEntryRowFragment$key } from '../__generated__/MainPanelEntryRowFragment.graphql';
-import MagnifyingGlassIcon from '../icons/MagnifyingGlassIcon';
-import { UserContext } from '../components/UserContextProvider';
-import { MainPanelCreateJournalMutation$data } from '../__generated__/MainPanelCreateJournalMutation.graphql';
-import AddCircleIcon from '../icons/AddCircleIcon';
-import { MainPanelCreateEntryMutation, MainPanelCreateEntryMutation$data } from '../__generated__/MainPanelCreateEntryMutation.graphql';
-import { ContentBlock, ContentState, EditorState, Modifier, RichUtils, convertFromRaw, convertToRaw, getDefaultKeyBinding, getVisibleSelectionRect } from 'draft-js';
-import Editor from '@draft-js-plugins/editor';
-import createToolbarPlugin, { Separator } from '@draft-js-plugins/static-toolbar';
-import createLinkifyPlugin from '@draft-js-plugins/linkify';
-import SaveIcon from '../icons/SaveIcon';
-import { MainPanelEntryEditorQuery, MainPanelEntryEditorQuery$data } from '../__generated__/MainPanelEntryEditorQuery.graphql';
-import { convertStringToEditorState, getPlainTextFromEditorState, handleEditorKeyCommand } from '../utils/editor';
-import { convertTimeStringtoFormattedDateString } from '../utils/utils';
 import {
-    ItalicButton,
     BoldButton,
-    UnderlineButton,
     CodeButton,
     HeadlineOneButton,
-    HeadlineTwoButton,
     HeadlineThreeButton,
-    UnorderedListButton,
+    HeadlineTwoButton,
+    ItalicButton,
     OrderedListButton,
+    UnderlineButton,
+    UnorderedListButton,
 } from '@draft-js-plugins/buttons';
-import 'draft-js/dist/Draft.css';
+import Editor from '@draft-js-plugins/editor';
+import createLinkifyPlugin from '@draft-js-plugins/linkify';
 import "@draft-js-plugins/linkify/lib/plugin.css";
-import DeleteEntryModal from '../components/screens/journals/DeleteEntryModal';
-import TrashIcon from '../icons/TrashIcon';
-import JournalSelectorActionMenu from '../components/screens/journals/JournalSelectorActionMenu';
-import AddIcon from '../icons/AddIcon';
-import Popup from 'reactjs-popup';
+import createToolbarPlugin, { Separator } from '@draft-js-plugins/static-toolbar';
+import { FloatingList, useClick, useDismiss, useFloating, useInteractions, useListNavigation, useRole } from '@floating-ui/react';
+import { convertToRaw, EditorState, getDefaultKeyBinding, getVisibleSelectionRect, RichUtils } from 'draft-js';
+import 'draft-js/dist/Draft.css';
+import React, { Suspense, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useFragment, useLazyLoadQuery, useMutation, usePaginationFragment } from 'react-relay';
+import { ConnectionHandler, graphql, PayloadError } from 'relay-runtime';
+import { MainPanelCreateEntryMutation$data } from '../__generated__/MainPanelCreateEntryMutation.graphql';
+import { MainPanelCreateJournalMutation$data } from '../__generated__/MainPanelCreateJournalMutation.graphql';
+import { MainPanelEntriesFeedFragment$key } from '../__generated__/MainPanelEntriesFeedFragment.graphql';
+import { MainPanelEntryEditorQuery$data } from '../__generated__/MainPanelEntryEditorQuery.graphql';
+import { MainPanelEntryRowFragment$data, MainPanelEntryRowFragment$key } from '../__generated__/MainPanelEntryRowFragment.graphql';
+import { MainPanelJournalSelectorFragment$data, MainPanelJournalSelectorFragment$key } from '../__generated__/MainPanelJournalSelectorFragment.graphql';
+import { MainPanelQuery$data } from '../__generated__/MainPanelQuery.graphql';
+import Search from '../components/Search';
+import { UserContext } from '../components/UserContextProvider';
 import Tooltip from '../components/reusable/Tooltip';
-import OpenBookIcon from '../icons/OpenBookIcon';
-import GhostEmptyState from '../icons/empty_states/GhostEmptyState';
-import DotSpinner from '../icons/animated/DotSpinner';
+import DeleteEntryModal from '../components/screens/journals/DeleteEntryModal';
+import JournalSelectorActionMenu from '../components/screens/journals/JournalSelectorActionMenu';
 import JournalSidePanelFallback from '../components/screens/journals/JournalSidePanelFallback';
+import { MainPanelTab } from '../enums/MainPanelTab';
+import AddCircleIcon from '../icons/AddCircleIcon';
+import AddIcon from '../icons/AddIcon';
+import ArrowIcon from '../icons/ArrowIcon';
+import MagnifyingGlassIcon from '../icons/MagnifyingGlassIcon';
+import OpenBookIcon from '../icons/OpenBookIcon';
+import SaveIcon from '../icons/SaveIcon';
+import TrashIcon from '../icons/TrashIcon';
+import DotSpinner from '../icons/animated/DotSpinner';
+import GhostEmptyState from '../icons/empty_states/GhostEmptyState';
+import { convertStringToEditorState, getPlainTextFromEditorState, handleEditorKeyCommand } from '../utils/editor';
+import { convertTimeStringtoFormattedDateString } from '../utils/utils';
 interface MainPanelProps {
     selectedTab: MainPanelTab;
 }

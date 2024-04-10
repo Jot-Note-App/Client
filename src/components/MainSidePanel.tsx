@@ -1,9 +1,9 @@
-import React, { useContext, useState } from 'react';
-import ProfileAvatar from './ProfileAvatar';
-import BookIcon from '../icons/BookIcon';
-import GoogleLogout from './GoogleLogout';
-import LogoutIcon from '../icons/LogoutIcon';
+import React, { useContext } from 'react';
 import { MainPanelTab } from '../enums/MainPanelTab';
+import BookIcon from '../icons/BookIcon';
+import LogoutIcon from '../icons/LogoutIcon';
+import GoogleLogout from './GoogleLogout';
+import ProfileAvatar from './ProfileAvatar';
 import { UserContext } from './UserContextProvider';
 import Tooltip from './reusable/Tooltip';
 interface UserProfileInfoProps {
@@ -35,7 +35,7 @@ interface MainSidePanelProps {
     setSelectedTab: (newTab: MainPanelTab) => void;
 }
 
-const MainSidePanel: React.FC<MainSidePanelProps> = ({ onLogoutCallback, selectedTab, setSelectedTab }) => {
+const MainSidePanel: React.FC<MainSidePanelProps> = ({ onLogoutCallback }) => {
     return (
         <div className=" bg-main min-h-screen px-3 py-6 grid grid-flow-row content-between justify-items-center">
             <div>

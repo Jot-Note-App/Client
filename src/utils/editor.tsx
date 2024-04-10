@@ -1,4 +1,4 @@
-import { EditorState, convertFromRaw, ContentState, convertToRaw, Modifier, SelectionState } from "draft-js";
+import { ContentState, convertFromRaw, convertToRaw, EditorState } from "draft-js";
 
 export const convertStringToEditorState = (content: string | null | undefined): EditorState => {
     const contentStateString = content || ''
@@ -20,29 +20,29 @@ export const getPlainTextFromEditorState = (editorState: EditorState) => {
 };
 
 // Remove the specified number of characters before the current selection
-const removeCharsBefore = (editorState: EditorState, numChars: number): EditorState => {
-    const currentContent = editorState.getCurrentContent();
-    const currentSelection = editorState.getSelection();
-    const startOffset = currentSelection.getStartOffset() - numChars;
-    if (startOffset >= 0) {
-        const newSelection = currentSelection.set(
-            'anchorOffset',
-            startOffset
-        ) as SelectionState;
-        const newContent = Modifier.removeRange(
-            currentContent,
-            newSelection,
-            'backward'
-        );
-        const newEditorState = EditorState.push(
-            editorState,
-            newContent,
-            'remove-range'
-        );
-        return newEditorState;
-    }
-    return editorState;
-}
+// const removeCharsBefore = (editorState: EditorState, numChars: number): EditorState => {
+//     const currentContent = editorState.getCurrentContent();
+//     const currentSelection = editorState.getSelection();
+//     const startOffset = currentSelection.getStartOffset() - numChars;
+//     if (startOffset >= 0) {
+//         const newSelection = currentSelection.set(
+//             'anchorOffset',
+//             startOffset
+//         ) as SelectionState;
+//         const newContent = Modifier.removeRange(
+//             currentContent,
+//             newSelection,
+//             'backward'
+//         );
+//         const newEditorState = EditorState.push(
+//             editorState,
+//             newContent,
+//             'remove-range'
+//         );
+//         return newEditorState;
+//     }
+//     return editorState;
+// }
 
 export const handleEditorKeyCommand = (e: React.KeyboardEvent<HTMLDivElement>, editorState: EditorState): EditorState => {
     if (e.code == 'Tab' && e.shiftKey) {
