@@ -212,7 +212,7 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect, e
                         <Search onSearchChange={setSearchTerm} />
                     </div>
                     <FloatingList elementsRef={elementsRef} labelsRef={labelsRef}>
-                        <div className="min-h-48 max-h-72 overflow-y-scroll" >
+                        <div className="min-h-48 max-h-72 overflow-y-auto" >
                             {options.length > 0 ? options.map((option) => (
                                 <JournalSelectorRow key={option.id} id={option.id} isSelected={option.id === selectedId} label={option.label} onSelect={handleJournalSelected} />)) :
                                 <div className="grid grid-flow-row items-center justify-center text-mediumGray p-5">
@@ -415,7 +415,6 @@ const EntriesFeed: React.FC<EntriesFeedProps> = ({ fragment, onSelectEntry, onEm
     useEffect(
         function handleEmptyFeed() {
             var numEntries = data.entries?.edges.length || 0
-            console.log("OnEmptyFeed numEntries:", numEntries)
             if (numEntries == 0) {
                 onEmptyFeed()
             }
@@ -669,18 +668,20 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
         <div className="w-full h-full flex justify-center">
             {
                 data.node && data.node.__typename == "Entry" ?
-                    <div className="grid grid-flow-row min-w-full" style={{ gridTemplateRows: 'auto 1fr' }}>
-                        <div className=' grid grid-flow-col px-20 pt-4 pb-1 text-small text-darkGray ' style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
+                    <div className="grid grid-flow-row min-w-full" style={{ gridTemplateRows: 'auto auto 1fr' }}>
+
+                        <div className=' grid grid-flow-col px-20 pt-4 pb-1 text-small text-darkGray ' style={{ gridTemplateColumns: '1fr 1fr 1fr' }} >
                             <div className="flex flex-col ">
                                 <div >Last Edit Saved: {convertTimeStringtoFormattedDateString(data.node.updatedAt, true)}</div>
                                 <div >Created: {convertTimeStringtoFormattedDateString(data.node.createdAt, true)}</div>
                             </div>
+
                             <div className="text-center">
                                 {data.node.journal.name} / <span className='text-offBlack'>{data.node.title || "Untitled"} </span>
                             </div>
-                            <div className="flex justify-end items-start">
-                                {/* TODO: replace SaveIcon with loading indicator when saving*/}
 
+                            <div className="flex flex-row justify-end">
+                                {/* TODO: replace SaveIcon with loading indicator when saving*/}
                                 <Tooltip
                                     text='Read-only: links enabled'
                                 >

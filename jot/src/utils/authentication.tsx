@@ -30,14 +30,3 @@ export const getProfilePicture = (credentials: string): string => {
     var decodedToken: CredentialPayload = decodeToken(credentials) as CredentialPayload;
     return decodedToken.picture;
 }
-
-export const hasValidSessionCookie = (): boolean => {
-    console.log(document.cookie.split(';'))
-    const sessionCookie = document.cookie.split(';').find(c => c.trim().startsWith('jot-auth-cookie'));
-    console.log(sessionCookie)
-    if (sessionCookie == undefined) {
-        return false;
-    }
-    const session = sessionCookie.split('=')[1];
-    return !isExpired(session);
-}
