@@ -658,6 +658,12 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
         [editorState]
     );
 
+    const handleTextAreaEnterKey = (event: React.KeyboardEvent) => {
+        if (event.code == 'Enter') {
+            editorRef.current?.focus();
+            event.preventDefault();
+        }
+    };
 
     return (
         <div className="w-full h-full flex justify-center">
@@ -728,6 +734,7 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
                                         onChange={handleTitleChange}
                                         value={title || ''}
                                         disabled={readOnly}
+                                        onKeyDown={handleTextAreaEnterKey}
                                     />
                                 </form>
                                 <div ref={editorContainerRef} onClick={e => e.stopPropagation()}>
