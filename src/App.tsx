@@ -1,15 +1,15 @@
-import React, { Suspense, useEffect, useState } from 'react'
-import './App.css'
-import './index.css'
+import React, { Suspense, useState } from 'react';
+import './App.css';
+import './index.css';
 
-import SplashScreen from './screens/SplashScreen';
-import { graphql } from 'relay-runtime';
 import { useLazyLoadQuery } from "react-relay/hooks";
-import { AppIsLoggedInQuery, AppIsLoggedInQuery$data } from './__generated__/AppIsLoggedInQuery.graphql'
-import { UserContextProvider } from './components/UserContextProvider';
-import MainScreen from './screens/MainScreen';
-import DotSpinner from './icons/animated/DotSpinner';
+import { graphql } from 'relay-runtime';
+import { AppIsLoggedInQuery } from './__generated__/AppIsLoggedInQuery.graphql';
 import MainScreenFallback from './components/screens/main/MainScreenFallback';
+import DotSpinner from './icons/animated/DotSpinner';
+import MainScreen from './screens/MainScreen';
+import SplashScreen from './screens/SplashScreen';
+
 
 const IsLoggedInQuery = graphql`
   query AppIsLoggedInQuery {

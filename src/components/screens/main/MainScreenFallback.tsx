@@ -1,7 +1,6 @@
 import React from 'react';
-import MainSidePanel from '../../MainSidePanel';
 import { MainPanelTab } from '../../../enums/MainPanelTab';
-import DotSpinner from '../../../icons/animated/DotSpinner';
+import MainSidePanel from '../../MainSidePanel';
 
 const MainScreenFallback: React.FC = () => {
     return (

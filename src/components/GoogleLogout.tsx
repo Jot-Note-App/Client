@@ -1,9 +1,9 @@
-import React, { Children } from 'react';
+import React from 'react';
 import { ReactNode } from 'react';
 import { googleLogout } from '@react-oauth/google';
 import { graphql, PayloadError } from 'relay-runtime';
 import { useMutation } from 'react-relay';
-import { GoogleLogoutLogoutMutation$data } from '../__generated__/GoogleLogoutLogoutMutation.graphql'
+import { GoogleLogoutLogoutMutation$data } from '../__generated__/GoogleLogoutLogoutMutation.graphql';
 const googleLogoutLogoutMutation = graphql`
 mutation GoogleLogoutLogoutMutation {
   logout {

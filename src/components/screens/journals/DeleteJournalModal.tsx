@@ -1,7 +1,7 @@
 import React from 'react';
 import { useMutation } from 'react-relay';
-import { ConnectionHandler, graphql } from 'relay-runtime';
 import Popup from 'reactjs-popup';
+import { graphql } from 'relay-runtime';
 import Button from '../../reusable/Button';
 
 const deleteJournalModalDeleteJournalMutation = graphql`

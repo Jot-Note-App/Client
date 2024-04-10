@@ -1,6 +1,5 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import { useState } from 'react';
-import GoogleLogout from '../components/GoogleLogout'
 import MainSidePanel from '../components/MainSidePanel';
 import MainPanel from './MainPanel';
 import { MainPanelTab } from '../enums/MainPanelTab'
