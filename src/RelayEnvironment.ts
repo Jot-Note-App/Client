@@ -1,11 +1,12 @@
 import {
   Environment,
+  FetchFunction,
   Network,
   RecordSource,
   Store,
-  FetchFunction,
 } from "relay-runtime";
 
+//TODO: Change this to the actual endpoint
 const HTTP_ENDPOINT = "http://localhost:8080/query";
 
 const fetchFn: FetchFunction = async (request, variables) => {
