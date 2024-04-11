@@ -34,7 +34,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
             // You can customize the error UI here
             return (
                 <div>
-                    <h1>Something went wrong.</h1>
+                    <h1>Something went wrong...</h1>
                     <p>{this.state.error?.toString()}</p>
                     <p>{this.state.errorInfo?.componentStack}</p>
                 </div>
