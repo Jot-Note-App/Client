@@ -19,6 +19,9 @@ relay:
 
 # Sync the frontend schema with the backend schema
 update-schema:
-	pnpm rover graph introspect $(DEV_ENDPOINT) > $(SCHEMA_PATH)
+	pnpm rover graph introspect $(VITE_ENDPOINT) > $(SCHEMA_PATH)
 
-.PHONY: all run update-schema dev relay
+build:
+	pnpm run build
+
+.PHONY: all run update-schema dev relay build
