@@ -6,10 +6,10 @@
   "homepage": "https://jot-note-app.github.io/Client",
   "scripts": {
     "dev": "vite",
-    "build": "relay-compiler --validate && tsc && vite build",
+    "build": "relay-compiler --validate && tsc && NODE_ENV=production vite build --mode=prod",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "start": "vite --port 3000",
+    "start": "vite --port 3000 ",
     "relay": "relay-compiler --watch",
     "predeploy": "pnpm run build",
     "deploy": "gh-pages -d build"
