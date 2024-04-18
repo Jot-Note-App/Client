@@ -121,11 +121,13 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect, e
     const [searchTerm, setSearchTerm] = useState<string | null>(null);
     const lastJournalKey = `User${userContext.id}-lastJournalId`
     const selectedJournal = data.journalSelectorJournals?.edges.find((edge) => edge.node.id == selectedId)
-    const handleJournalSelected = useCallback((id: string | null) => {
-        setSelectedId(id)
-        onSelect(id)
+    const handleJournalSelected = (id: string | null) => {
+        if (id != selectedJournal?.node.id) {
+            setSelectedId(id)
+            onSelect(id)
+        }
         setIsOpen(false)
-    }, [])
+    }
     const selectFirstJournal = useCallback(() => {
         handleJournalSelected(data.journalSelectorJournals?.edges[0]?.node.id || null)
     }, [data.journalSelectorJournals])
@@ -890,7 +892,7 @@ const Journals: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState<string | null>(null)
     const [isFeedEmpty, setIsFeedEmpty] = useState<boolean>(false)
 
-
+    console.log(currJournalId)
     const onJournalSelected = useCallback((journalId: string | null) => {
         setSearchTerm(null)
         if (journalId == null) {
@@ -902,7 +904,7 @@ const Journals: React.FC = () => {
         setIsFeedEmpty(false)
         setCurrEntryId(null)
         setCurrJournalId(journalId);
-    }, [])
+    }, [currJournalId])
 
     const onSearchSubmit = useCallback((search: string) => {
         setSearchTerm(search != '' ? search : null)
