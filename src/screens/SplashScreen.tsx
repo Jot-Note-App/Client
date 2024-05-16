@@ -1,10 +1,11 @@
+import { GoogleLogin, GoogleOAuthProvider, } from '@react-oauth/google';
 import React from 'react';
-import { GoogleOAuthProvider, GoogleLogin, } from '@react-oauth/google';
-import SplashScreenBackground from '../components/SplashScreenBackground';
-import { validateCredentials } from '../utils/authentication';
-import { graphql, PayloadError } from 'relay-runtime';
 import { useMutation } from 'react-relay';
+import { graphql, PayloadError } from 'relay-runtime';
 import { SplashScreenLoginMutation$data } from '../__generated__/SplashScreenLoginMutation.graphql';
+import SplashScreenBackground from '../components/SplashScreenBackground';
+import DemoAppIcon from '../icons/DemoAppIcon';
+import { validateCredentials } from '../utils/authentication';
 
 const splashScreenLoginMutation = graphql`
 mutation SplashScreenLoginMutation($credentials: String!) {
@@ -37,11 +38,11 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onLoginCallback }) => {
             <SplashScreenBackground />
             <div className="flex min-h-screen">
                 <div className="ml-48 grid place-content-center justify-items-center">
-                    <div className="flex items-end mb-8 gap-1">
+                    <div className="flex items-end mb-4 gap-1">
                         <div className="text-offBlack text-center text-8xl font-bold">Jot</div>
                     </div>
-                    <p className="text-offBlack text-xl mb-4">
-                        Notes with a pulse: Your sentiments, brilliantly organized
+                    <p className="text-offBlack text-xl font-light mb-7">
+                        Notes without the noise. Lightweight note-taking
                     </p>
                     <GoogleLogin
                         onSuccess={credentialResponse => {
@@ -60,6 +61,10 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onLoginCallback }) => {
                         }}
                         ux_mode='popup'
                     />
+                    <div className="overflow-hidden rounded-lg shadow-lg border border-lightGray mt-2">
+                        <DemoAppIcon />
+                    </div>
+
                 </div>
             </div>
         </GoogleOAuthProvider >
