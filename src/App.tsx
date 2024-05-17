@@ -2,6 +2,7 @@ import React, { Suspense, useState } from 'react';
 import './App.css';
 import './index.css';
 
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useLazyLoadQuery } from "react-relay/hooks";
 import { graphql } from 'relay-runtime';
 import { AppIsLoggedInQuery } from './__generated__/AppIsLoggedInQuery.graphql';
@@ -50,12 +51,14 @@ const Screen: React.FC = () => {
 
 function App() {
   return (
-    <Suspense fallback={
-      <div className='w-screen h-screen flex items-center justify-center'>
-        <DotSpinner />
-      </div>}>
-      <Screen />
-    </Suspense>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_CLIENT_ID}>
+      <Suspense fallback={
+        <div className='w-screen h-screen flex items-center justify-center'>
+          <DotSpinner />
+        </div>}>
+        <Screen />
+      </Suspense>
+    </GoogleOAuthProvider>
   )
 }
 
