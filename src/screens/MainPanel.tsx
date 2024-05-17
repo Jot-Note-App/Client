@@ -134,6 +134,7 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect, e
     useEffect(
         function handleInitialJournalSelection() {
             const storedLastJournalId = localStorage.getItem(lastJournalKey);
+            console.log(lastJournalKey)
             if (storedLastJournalId) {
                 handleJournalSelected(storedLastJournalId)
             } else {
