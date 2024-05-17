@@ -31,6 +31,6 @@ const Button: React.FC<ButtonProps> = ({ onClick, color = 'main', children }) =>
             break;
 
     }
-    return <button className={`min-w-20 px-2 py-1 text-white font-medium rounded outline-none select-none transition-colors duration-200 ${colorStyle} ${hoverStyle}`} onClick={onClick}>{children}</button>;
+    return <button className={`px-2 py-1 text-white font-medium rounded outline-none select-none transition-colors duration-200 ${colorStyle} ${hoverStyle}`} style={{ minWidth: "5rem" }} onClick={onClick}>{children}</button>;
 }
 export default Button;
