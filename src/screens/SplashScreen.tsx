@@ -44,7 +44,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onLoginCallback }) => {
                         </Button>
                     </CustomGoogleLogin>
 
-                    <div className=" overflow-hidden rounded-lg shadow-lg">
+                    <div className=" overflow-hidden rounded-lg shadow-lg border-t border-faintGray">
                         <DemoAppIcon />
                     </div>
                 </div>
