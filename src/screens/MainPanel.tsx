@@ -673,7 +673,7 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
 
                         <div className=' grid grid-flow-col px-20 pt-4 pb-1 text-small text-darkGray ' style={{ gridTemplateColumns: '1fr 1fr 1fr' }} >
                             <div className="flex flex-col ">
-                                <div >Last Edit Saved: {convertTimeStringtoFormattedDateString(data.node.updatedAt, true)}</div>
+                                <div >Last Saved: {convertTimeStringtoFormattedDateString(data.node.updatedAt, true)}</div>
                                 <div >Created: {convertTimeStringtoFormattedDateString(data.node.createdAt, true)}</div>
                             </div>
 
