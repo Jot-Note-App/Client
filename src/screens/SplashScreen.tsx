@@ -1,68 +1,55 @@
 import React from 'react';
-import { GoogleOAuthProvider, GoogleLogin, } from '@react-oauth/google';
+import CustomGoogleLogin from '../components/CustomGoogleLogin';
+import Button from '../components/reusable/Button';
 import SplashScreenBackground from '../components/SplashScreenBackground';
-import { validateCredentials } from '../utils/authentication';
-import { graphql, PayloadError } from 'relay-runtime';
-import { useMutation } from 'react-relay';
-import { SplashScreenLoginMutation$data } from '../__generated__/SplashScreenLoginMutation.graphql';
-
-const splashScreenLoginMutation = graphql`
-mutation SplashScreenLoginMutation($credentials: String!) {
-  loginOrSignUpWithGoogle(credentials: $credentials) {
-    ... on LoginSuccess {
-        success
-    }
-    ... on LoginFailure {
-        error
-    }
-  }
-}
-`
+import DemoAppIcon from '../icons/DemoAppIcon';
+import PenIcon from '../icons/PenIcon';
 
 interface SplashScreenProps {
     onLoginCallback?: () => void
 };
 
 const SplashScreen: React.FC<SplashScreenProps> = ({ onLoginCallback }) => {
-    const [login, _isLoggingIn] = useMutation(splashScreenLoginMutation);
-    const clientId = import.meta.env.VITE_CLIENT_ID;
-    const onLoginComplete = (response: {}, _errors: PayloadError[] | null) => {
-        const res = response as SplashScreenLoginMutation$data;
-        if (res.loginOrSignUpWithGoogle.success && onLoginCallback != undefined) {
-            onLoginCallback()
-        }
-    };
     return (
-        <GoogleOAuthProvider clientId={clientId}>
-            <SplashScreenBackground />
-            <div className="flex min-h-screen">
-                <div className="ml-48 grid place-content-center justify-items-center">
-                    <div className="flex items-end mb-8 gap-1">
-                        <div className="text-offBlack text-center text-8xl font-bold">Jot</div>
+        <div>
+            <div className="absolute bottom-0 left-0 right-0  -z-10">
+                <SplashScreenBackground />
+            </div>
+            <div className="max-h-screen">
+
+                <div className="flex place-content-between text-offBlack pl-10 pr-16 mt-5 items-center">
+                    <div className="flex">
+                        <div className="relative -bottom-1 -right-3">
+                            <PenIcon height={48} width={48} />
+                        </div>
+                        <div className="text-center text-5xl font-bold">Jot</div>
                     </div>
-                    <p className="text-offBlack text-xl mb-4">
-                        Notes with a pulse: Your sentiments, brilliantly organized
+                    <CustomGoogleLogin onLoginCallback={onLoginCallback}>
+                        <Button color={'transparent'} onClick={() => { }} >
+                            <div className="text-offBlack text-large font-semibold px-2 py-1">
+                                Login
+                            </div>
+                        </Button>
+                    </CustomGoogleLogin>
+                </div>
+                <div className='flex flex-col items-center gap-7 mt-24'>
+                    <p className="text-offBlack text-4xl font-semibold">
+                        Notes without the noise <br /> Lightweight note-taking
                     </p>
-                    <GoogleLogin
-                        onSuccess={credentialResponse => {
-                            console.log(credentialResponse)
-                            if (validateCredentials(credentialResponse.credential ?? '')) {
-                                login({
-                                    variables: {
-                                        credentials: credentialResponse.credential
-                                    },
-                                    onCompleted: onLoginComplete,
-                                })
-                            }
-                        }}
-                        onError={() => {
-                            console.log('Login Failed');
-                        }}
-                        ux_mode='popup'
-                    />
+                    <CustomGoogleLogin onLoginCallback={onLoginCallback}>
+                        <Button color={'purple'} onClick={() => { }} >
+                            <div className="px-2 py-1">
+                                Try for free
+                            </div>
+                        </Button>
+                    </CustomGoogleLogin>
+
+                    <div className=" overflow-hidden rounded-lg shadow-lg border-t border-faintGray">
+                        <DemoAppIcon />
+                    </div>
                 </div>
             </div>
-        </GoogleOAuthProvider >
+        </div>
     );
 };
 

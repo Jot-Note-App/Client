@@ -1,12 +1,11 @@
-import React from 'react';
-import { useState } from 'react';
-import MainSidePanel from '../components/MainSidePanel';
-import MainPanel from './MainPanel';
-import { MainPanelTab } from '../enums/MainPanelTab'
-import { graphql } from 'relay-runtime';
+import React, { useState } from 'react';
 import { useLazyLoadQuery } from 'react-relay';
+import { graphql } from 'relay-runtime';
 import { MainScreenUserContextQuery } from '../__generated__/MainScreenUserContextQuery.graphql';
+import MainSidePanel from '../components/MainSidePanel';
 import { UserContextProvider } from '../components/UserContextProvider';
+import { MainPanelTab } from '../enums/MainPanelTab';
+import MainPanel from './MainPanel';
 
 const userContextQuery = graphql`
   query MainScreenUserContextQuery {
@@ -27,6 +26,9 @@ const MainScreen: React.FC<MainScreenProps> = ({ onLogoutCallback }) => {
     const data = useLazyLoadQuery<MainScreenUserContextQuery>(
         userContextQuery,
         {},
+        {
+            fetchPolicy: "network-only"
+        }
     );
     const [selectedTab, setSelectedTab] = useState(MainPanelTab.Journals);
     const userContext = {

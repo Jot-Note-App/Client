@@ -121,17 +121,20 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect, e
     const [searchTerm, setSearchTerm] = useState<string | null>(null);
     const lastJournalKey = `User${userContext.id}-lastJournalId`
     const selectedJournal = data.journalSelectorJournals?.edges.find((edge) => edge.node.id == selectedId)
-    const handleJournalSelected = useCallback((id: string | null) => {
-        setSelectedId(id)
-        onSelect(id)
+    const handleJournalSelected = (id: string | null) => {
+        if (id != selectedJournal?.node.id) {
+            setSelectedId(id)
+            onSelect(id)
+        }
         setIsOpen(false)
-    }, [])
+    }
     const selectFirstJournal = useCallback(() => {
         handleJournalSelected(data.journalSelectorJournals?.edges[0]?.node.id || null)
     }, [data.journalSelectorJournals])
     useEffect(
         function handleInitialJournalSelection() {
             const storedLastJournalId = localStorage.getItem(lastJournalKey);
+            console.log(lastJournalKey)
             if (storedLastJournalId) {
                 handleJournalSelected(storedLastJournalId)
             } else {
@@ -670,7 +673,7 @@ const EntryEditor: React.FC<EntryEditorProps> = ({ entryId, onEntryDeleted }) =>
 
                         <div className=' grid grid-flow-col px-20 pt-4 pb-1 text-small text-darkGray ' style={{ gridTemplateColumns: '1fr 1fr 1fr' }} >
                             <div className="flex flex-col ">
-                                <div >Last Edit Saved: {convertTimeStringtoFormattedDateString(data.node.updatedAt, true)}</div>
+                                <div >Last Saved: {convertTimeStringtoFormattedDateString(data.node.updatedAt, true)}</div>
                                 <div >Created: {convertTimeStringtoFormattedDateString(data.node.createdAt, true)}</div>
                             </div>
 
@@ -890,7 +893,7 @@ const Journals: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState<string | null>(null)
     const [isFeedEmpty, setIsFeedEmpty] = useState<boolean>(false)
 
-
+    console.log(currJournalId)
     const onJournalSelected = useCallback((journalId: string | null) => {
         setSearchTerm(null)
         if (journalId == null) {
@@ -902,7 +905,7 @@ const Journals: React.FC = () => {
         setIsFeedEmpty(false)
         setCurrEntryId(null)
         setCurrJournalId(journalId);
-    }, [])
+    }, [currJournalId])
 
     const onSearchSubmit = useCallback((search: string) => {
         setSearchTerm(search != '' ? search : null)
