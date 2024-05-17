@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<8329ebbbce6d941aff5995b4f8f7217c>>
+ * @generated SignedSource<<5547fee552b7cb14acd170a3cbdc69de>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -9,18 +9,18 @@
 // @ts-nocheck
 
 import { ConcreteRequest, Mutation } from 'relay-runtime';
-export type SplashScreenLoginMutation$variables = {
+export type CustomGoogleLoginMutation$variables = {
   credentials: string;
 };
-export type SplashScreenLoginMutation$data = {
+export type CustomGoogleLoginMutation$data = {
   readonly loginOrSignUpWithGoogle: {
     readonly error?: string;
     readonly success?: boolean;
   };
 };
-export type SplashScreenLoginMutation = {
-  response: SplashScreenLoginMutation$data;
-  variables: SplashScreenLoginMutation$variables;
+export type CustomGoogleLoginMutation = {
+  response: CustomGoogleLoginMutation$data;
+  variables: CustomGoogleLoginMutation$variables;
 };
 
 const node: ConcreteRequest = (function(){
@@ -71,7 +71,7 @@ return {
     "argumentDefinitions": (v0/*: any*/),
     "kind": "Fragment",
     "metadata": null,
-    "name": "SplashScreenLoginMutation",
+    "name": "CustomGoogleLoginMutation",
     "selections": [
       {
         "alias": null,
@@ -94,7 +94,7 @@ return {
   "operation": {
     "argumentDefinitions": (v0/*: any*/),
     "kind": "Operation",
-    "name": "SplashScreenLoginMutation",
+    "name": "CustomGoogleLoginMutation",
     "selections": [
       {
         "alias": null,
@@ -119,16 +119,16 @@ return {
     ]
   },
   "params": {
-    "cacheID": "77a6dc468e26f2b485bd837c932a1db3",
+    "cacheID": "79398d963286db381bf5ac2e4557d4bf",
     "id": null,
     "metadata": {},
-    "name": "SplashScreenLoginMutation",
+    "name": "CustomGoogleLoginMutation",
     "operationKind": "mutation",
-    "text": "mutation SplashScreenLoginMutation(\n  $credentials: String!\n) {\n  loginOrSignUpWithGoogle(credentials: $credentials) {\n    __typename\n    ... on LoginSuccess {\n      success\n    }\n    ... on LoginFailure {\n      error\n    }\n  }\n}\n"
+    "text": "mutation CustomGoogleLoginMutation(\n  $credentials: String!\n) {\n  loginOrSignUpWithGoogle(credentials: $credentials) {\n    __typename\n    ... on LoginSuccess {\n      success\n    }\n    ... on LoginFailure {\n      error\n    }\n  }\n}\n"
   }
 };
 })();
 
-(node as any).hash = "bc9c5e986bfdde8990068208ffb17218";
+(node as any).hash = "d71b6babf326f3c86a99d2b0ca710572";
 
 export default node;
