@@ -17,7 +17,7 @@ const UserProfileInfo: React.FC<UserProfileInfoProps> = ({ hideDetails = false }
     return (
 
         <div className="flex items-center justify-center gap-2">
-            <ProfileAvatar firstName={firstName} lastName={lastName} />
+            <ProfileAvatar firstName={firstName} lastName={lastName} picture={userContext.picture} />
             {!hideDetails &&
                 <div className="text-white">
                     <div className="">{firstName + " " + lastName}</div>
