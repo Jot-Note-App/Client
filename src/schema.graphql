@@ -135,6 +135,7 @@ type User implements Node {
   lastUpdatedEntry: Entry
   createdAt: Time!
   updatedAt: Time!
+  picture: String
 }
 interface Node {
   id: ID!
