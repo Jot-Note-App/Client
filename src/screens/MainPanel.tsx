@@ -134,7 +134,6 @@ const JournalSelector: React.FC<JournalSelectorProps> = ({ fragment, onSelect, e
     useEffect(
         function handleInitialJournalSelection() {
             const storedLastJournalId = localStorage.getItem(lastJournalKey);
-            console.log(lastJournalKey)
             if (storedLastJournalId) {
                 handleJournalSelected(storedLastJournalId)
             } else {
@@ -893,7 +892,6 @@ const Journals: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState<string | null>(null)
     const [isFeedEmpty, setIsFeedEmpty] = useState<boolean>(false)
 
-    console.log(currJournalId)
     const onJournalSelected = useCallback((journalId: string | null) => {
         setSearchTerm(null)
         if (journalId == null) {

@@ -15,6 +15,7 @@ const userContextQuery = graphql`
       firstName
       lastName
       email
+      picture
     }
   }
 `;
@@ -35,7 +36,8 @@ const MainScreen: React.FC<MainScreenProps> = ({ onLogoutCallback }) => {
         id: data.user.id,
         firstName: data.user.firstName,
         lastName: data.user.lastName,
-        email: data.user.email
+        email: data.user.email,
+        picture: data.user.picture as string | undefined
     }
     return (
         <UserContextProvider user={userContext}>

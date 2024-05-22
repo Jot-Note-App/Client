@@ -1,10 +1,11 @@
-import React from 'react'
+import React from 'react';
 
 interface UserContext {
     id: string;
     firstName: string;
     lastName: string;
     email: string;
+    picture?: string;
 }
 
 interface UserContextProviderProps {
@@ -16,7 +17,8 @@ const UserContext = React.createContext<UserContext>({
     id: "",
     firstName: " ",
     lastName: " ",
-    email: ""
+    email: "",
+    picture: undefined
 });
 
 const UserContextProvider: React.FC<UserContextProviderProps> = ({ children, user }) => {

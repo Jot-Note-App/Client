@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<20f8ee013227b1d1529c81c01b03b760>>
+ * @generated SignedSource<<618680b66e4c2359c3ab310e12f38251>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -17,6 +17,7 @@ export type MainScreenUserContextQuery$data = {
     readonly firstName: string;
     readonly id: string;
     readonly lastName: string;
+    readonly picture: string | null | undefined;
   };
 };
 export type MainScreenUserContextQuery = {
@@ -68,6 +69,13 @@ var v0 = [
         "kind": "ScalarField",
         "name": "email",
         "storageKey": null
+      },
+      {
+        "alias": null,
+        "args": null,
+        "kind": "ScalarField",
+        "name": "picture",
+        "storageKey": null
       }
     ],
     "storageKey": null
@@ -91,16 +99,16 @@ return {
     "selections": (v0/*: any*/)
   },
   "params": {
-    "cacheID": "3e23767534d1bf5119a4c2e44327d3fc",
+    "cacheID": "93419c3c40c3f55ab4b968270bf70b42",
     "id": null,
     "metadata": {},
     "name": "MainScreenUserContextQuery",
     "operationKind": "query",
-    "text": "query MainScreenUserContextQuery {\n  isLoggedIn\n  user {\n    id\n    firstName\n    lastName\n    email\n  }\n}\n"
+    "text": "query MainScreenUserContextQuery {\n  isLoggedIn\n  user {\n    id\n    firstName\n    lastName\n    email\n    picture\n  }\n}\n"
   }
 };
 })();
 
-(node as any).hash = "d222854bccfa1372971fd7f7b059308e";
+(node as any).hash = "01802aadf0cba270903d93ccd30dd617";
 
 export default node;
